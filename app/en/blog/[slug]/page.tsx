@@ -1,10 +1,15 @@
 import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
+import type { NotionPage } from '@/lib/notion';
 
-export default async function Post({ params }: { params: { slug: string } }) {
-  // 确保params是已解析的
-  const resolvedParams = await Promise.resolve(params);
-  const page: any = await getPost(resolvedParams.slug);
+type PageParams = {
+  slug: string;
+};
+
+// 直接使用参数并显式指定类型
+export default async function Post(props: { params: PageParams }) {
+  const { params } = props;
+  const page: NotionPage | null = await getPost(params.slug);
   
   if (!page) {
     return (
@@ -18,7 +23,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
   }
 
   // 获取Summary内容，用于显示在文章开头
-  const summaryText = page.properties.Summary?.rich_text?.map((text: any) => text.plain_text).join('') || '';
+  const summaryText = page.properties.Summary?.rich_text?.map((text) => text.plain_text).join('') || '';
 
   return (
     <article className="prose prose-lg max-w-3xl mx-auto py-10 px-4">
@@ -39,7 +44,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
           {/* 显示Tags */}
           {page.properties.Tags?.multi_select && page.properties.Tags.multi_select.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {page.properties.Tags.multi_select.map((tag: any) => (
+              {page.properties.Tags.multi_select.map((tag) => (
                 <span 
                   key={tag.id} 
                   className="px-3 py-1 text-sm rounded-full"

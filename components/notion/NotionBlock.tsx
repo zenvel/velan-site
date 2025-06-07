@@ -1,25 +1,9 @@
 import React from 'react';
-
-interface RichText {
-  type: string;
-  text?: {
-    content: string;
-    link?: { url: string } | null;
-  };
-  annotations?: {
-    bold: boolean;
-    italic: boolean;
-    strikethrough: boolean;
-    underline: boolean;
-    code: boolean;
-    color: string;
-  };
-  plain_text?: string;
-  href?: string | null;
-}
+import Image from 'next/image';
+import { RichText, NotionBlock as NotionBlockType } from '@/lib/notion';
 
 interface BlockProps {
-  block: any;
+  block: NotionBlockType;
   level?: number;
 }
 
@@ -30,7 +14,7 @@ const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
     <>
       {richTexts.map((richText, index) => {
         const { annotations, text } = richText;
-        let content = text?.content || richText.plain_text || '';
+        const content = text?.content || richText.plain_text || '';
         
         if (!content) return null;
         
@@ -96,7 +80,7 @@ const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
 const NotionBlock = ({ block, level = 0 }: BlockProps) => {
   if (!block) return null;
 
-  const { type, id } = block;
+  const { type } = block;
   const value = block[type];
   
   // 处理子块
@@ -104,7 +88,7 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
     if (block.children) {
       return (
         <div className="pl-4 mt-2 border-l border-gray-200">
-          {block.children.map((child: any) => (
+          {block.children.map((child) => (
             <NotionBlock key={child.id} block={child} level={level + 1} />
           ))}
         </div>
@@ -194,11 +178,16 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       
       return (
         <figure className="my-6">
-          <img 
-            src={imageUrl} 
-            alt={caption ? "图片带有说明" : "Notion中的图片"} 
-            className="max-w-full h-auto rounded-lg shadow-sm mx-auto"
-          />
+          <div className="relative max-w-full h-auto rounded-lg shadow-sm mx-auto overflow-hidden">
+            <Image 
+              src={imageUrl} 
+              alt={caption ? "图片带有说明" : "Notion中的图片"} 
+              className="max-w-full h-auto rounded-lg"
+              width={700}
+              height={400}
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
           {caption}
           {renderChildren()}
         </figure>

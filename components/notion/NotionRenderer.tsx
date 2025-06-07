@@ -1,8 +1,9 @@
 import React from 'react';
 import NotionBlock from './NotionBlock';
+import { NotionBlock as NotionBlockType } from '@/lib/notion';
 
 interface NotionRendererProps {
-  blocks: any[];
+  blocks: NotionBlockType[];
 }
 
 const NotionRenderer = ({ blocks }: NotionRendererProps) => {
@@ -10,10 +11,8 @@ const NotionRenderer = ({ blocks }: NotionRendererProps) => {
     return null; // 页面为空时不显示任何内容
   }
 
-  let orderedListItems: any[] = [];
-  let bulletedListItems: any[] = [];
-  let isProcessingOrderedList = false;
-  let isProcessingBulletedList = false;
+  let orderedListItems: NotionBlockType[] = [];
+  let bulletedListItems: NotionBlockType[] = [];
 
   return (
     <div className="notion-content">
@@ -22,14 +21,12 @@ const NotionRenderer = ({ blocks }: NotionRendererProps) => {
 
         // 处理有序列表
         if (block.type === 'numbered_list_item') {
-          isProcessingOrderedList = true;
           orderedListItems.push(block);
 
           // 检查是否是列表的最后一项
           if (nextBlock?.type !== 'numbered_list_item') {
             const listItems = [...orderedListItems];
             orderedListItems = [];
-            isProcessingOrderedList = false;
             
             return (
               <ol key={block.id} className="list-decimal pl-6 my-4 space-y-1">
@@ -44,14 +41,12 @@ const NotionRenderer = ({ blocks }: NotionRendererProps) => {
 
         // 处理无序列表
         if (block.type === 'bulleted_list_item') {
-          isProcessingBulletedList = true;
           bulletedListItems.push(block);
 
           // 检查是否是列表的最后一项
           if (nextBlock?.type !== 'bulleted_list_item') {
             const listItems = [...bulletedListItems];
             bulletedListItems = [];
-            isProcessingBulletedList = false;
             
             return (
               <ul key={block.id} className="list-disc pl-6 my-4 space-y-1">

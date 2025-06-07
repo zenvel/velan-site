@@ -1,8 +1,9 @@
 import { getPosts } from '@/lib/notion';
 import Link from 'next/link';
+import type { NotionPage } from '@/lib/notion';
 
 export default async function BlogList() {
-  const posts: any = await getPosts();
+  const posts: NotionPage[] = await getPosts();
   
   return (
     <div className="bg-white dark:bg-gray-900">
@@ -15,7 +16,7 @@ export default async function BlogList() {
           </div>
         ) : (
           <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-            {posts.map((p: any) => {
+            {posts.map((p: NotionPage) => {
               try {
                 // 添加安全检查
                 const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
@@ -50,7 +51,7 @@ export default async function BlogList() {
                           
                           {tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                              {tags.map((tag: any) => (
+                              {tags.map((tag) => (
                                 <span 
                                   key={tag.id} 
                                   className="px-3 py-1 text-sm rounded-full"
@@ -71,7 +72,7 @@ export default async function BlogList() {
                       
                       {summary.length > 0 && (
                         <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-                          {summary.map((text: any) => text.plain_text).join('')}
+                          {summary.map((text) => text.plain_text).join('')}
                         </p>
                       )}
                       
