@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import BlogPreview from '@/components/BlogPreview'
 
 /**
  * Velan Home – high-standard landing page
@@ -80,7 +81,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Posts placeholder */}
+      <BlogPreview />
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="flex items-end justify-between gap-4">
           <h2 className="text-3xl font-bold">Latest Posts</h2>
