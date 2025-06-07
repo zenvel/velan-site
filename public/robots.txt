@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://velan.zenvel.io/sitemap.xml 

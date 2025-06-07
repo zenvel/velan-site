@@ -10,11 +10,27 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: {
-    template: '%s | Velan',
-    default: 'Velan - 个人博客',
+  title: 'Velan Blog',
+  description: '写作、思考、实践 | Velan 的一人系统实验日志',
+  openGraph: {
+    title: 'Velan Blog',
+    description: '来自一人系统构建者的长期写作实验',
+    url: 'https://velan.zenvel.io',
+    siteName: 'Velan Blog',
+    images: [
+      {
+        url: '/og-cover.png',
+        width: 1200,
+        height: 630,
+        alt: 'Velan Blog'
+      }
+    ],
+    locale: 'zh_CN',
+    type: 'website'
   },
-  description: "A blog powered by Next.js and Notion API",
+  icons: {
+    icon: '/favicon.ico'
+  },
   authors: [{ name: 'Velan' }],
   creator: 'Velan',
   keywords: ['blog', 'notion', 'nextjs', 'react'],
