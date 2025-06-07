@@ -1,18 +1,25 @@
 'use client';
 
 import "./globals.css";
-// import { StagewiseToolbar } from '@stagewise/toolbar-next';
+import { useState, useEffect } from 'react';
+import { StagewiseToolbar } from '@stagewise/toolbar-next';
 
 // Stagewise配置
-// const stagewiseConfig = {
-//   plugins: []
-// };
+const stagewiseConfig = {
+  plugins: []
+};
 
 export default function ClientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <html lang="zh-CN" className="tongyi-design-pc">
       <body
@@ -21,10 +28,9 @@ export default function ClientLayout({
         <main className="min-h-screen">
           {children}
         </main>
-        {/* 临时注释掉 StagewiseToolbar 以解决兼容性问题 */}
-        {/* {process.env.NODE_ENV === 'development' && (
+        {isMounted && process.env.NODE_ENV === 'development' && (
           <StagewiseToolbar config={stagewiseConfig} />
-        )} */}
+        )}
       </body>
     </html>
   );
