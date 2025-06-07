@@ -1,14 +1,30 @@
 import React from 'react';
 import Image from 'next/image';
-import { RichText, NotionBlock as NotionBlockType } from '@/lib/notion';
+import type { RichText, NotionBlock as NotionBlockType } from '@/lib/notion-types';
 
 interface BlockProps {
   block: NotionBlockType;
   level?: number;
 }
 
+/**
+ * 渲染Notion富文本内容
+ */
 const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
   if (!richTexts || richTexts.length === 0) return null;
+
+  // 颜色映射表
+  const colorMap: Record<string, string> = {
+    gray: "text-gray-500",
+    brown: "text-amber-700",
+    orange: "text-orange-500",
+    yellow: "text-yellow-500",
+    green: "text-green-600",
+    blue: "text-blue-600",
+    purple: "text-purple-600",
+    pink: "text-pink-600",
+    red: "text-red-600",
+  };
 
   return (
     <>
@@ -36,18 +52,6 @@ const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
             element = <u key={`u-${index}`}>{element}</u>;
             
           // 处理颜色
-          const colorMap: Record<string, string> = {
-            gray: "text-gray-500",
-            brown: "text-amber-700",
-            orange: "text-orange-500",
-            yellow: "text-yellow-500",
-            green: "text-green-600",
-            blue: "text-blue-600",
-            purple: "text-purple-600",
-            pink: "text-pink-600",
-            red: "text-red-600",
-          };
-          
           if (annotations.color && annotations.color !== 'default') {
             const colorClass = colorMap[annotations.color] || '';
             if (colorClass) {
@@ -77,15 +81,65 @@ const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
   );
 };
 
+/**
+ * 图片组件，支持图片类型检测和加载优化
+ */
+const NotionImage = ({ block }: { block: NotionBlockType }) => {
+  if (!block.image) return null;
+  
+  let imageUrl = '';
+  
+  if (block.image.type === 'external' && block.image.external?.url) {
+    imageUrl = block.image.external.url;
+  } else if (block.image.type === 'file' && block.image.file?.url) {
+    imageUrl = block.image.file.url;
+  }
+  
+  if (!imageUrl) return null;
+  
+  const caption = block.image.caption && block.image.caption.length > 0 
+    ? <figcaption className="text-center text-sm text-gray-500 mt-2">
+        <RichTextRenderer richTexts={block.image.caption} />
+      </figcaption> 
+    : null;
+  
+  return (
+    <figure className="my-6">
+      <div className="relative max-w-full h-auto rounded-lg shadow-sm mx-auto overflow-hidden">
+        <Image 
+          src={imageUrl} 
+          alt={caption ? "图片带有说明" : "Notion中的图片"} 
+          className="max-w-full h-auto rounded-lg"
+          width={700}
+          height={400}
+          style={{ objectFit: 'contain' }}
+          loading="lazy"
+          quality={85}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
+      {caption}
+    </figure>
+  );
+};
+
+// 类型安全的获取块内容的辅助函数
+const getBlockContent = (block: NotionBlockType, type: string) => {
+  const content = block[type as keyof NotionBlockType];
+  return content && typeof content === 'object' ? content : null;
+};
+
+/**
+ * 渲染Notion块
+ */
 const NotionBlock = ({ block, level = 0 }: BlockProps) => {
   if (!block) return null;
 
   const { type } = block;
-  const value = block[type];
   
   // 处理子块
   const renderChildren = () => {
-    if (block.children) {
+    if (block.children && block.children.length > 0) {
       return (
         <div className="pl-4 mt-2 border-l border-gray-200">
           {block.children.map((child) => (
@@ -97,12 +151,20 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
     return null;
   };
 
+  // 渲染富文本块的助手函数
+  const renderRichText = (blockType: string) => {
+    const content = getBlockContent(block, blockType);
+    if (!content || !('rich_text' in content)) return null;
+    return <RichTextRenderer richTexts={content.rich_text as RichText[]} />;
+  };
+
+  // 为不同块类型渲染对应组件
   switch (type) {
     case 'paragraph':
       return (
         <div className="mb-4">
           <p className="leading-relaxed">
-            <RichTextRenderer richTexts={value.rich_text} />
+            {renderRichText('paragraph')}
           </p>
           {renderChildren()}
         </div>
@@ -112,7 +174,7 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <div className="mt-8 mb-4">
           <h1 className="text-2xl font-bold">
-            <RichTextRenderer richTexts={value.rich_text} />
+            {renderRichText('heading_1')}
           </h1>
           {renderChildren()}
         </div>
@@ -122,7 +184,7 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <div className="mt-6 mb-3">
           <h2 className="text-xl font-bold">
-            <RichTextRenderer richTexts={value.rich_text} />
+            {renderRichText('heading_2')}
           </h2>
           {renderChildren()}
         </div>
@@ -132,7 +194,7 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <div className="mt-4 mb-2">
           <h3 className="text-lg font-bold">
-            <RichTextRenderer richTexts={value.rich_text} />
+            {renderRichText('heading_3')}
           </h3>
           {renderChildren()}
         </div>
@@ -141,7 +203,7 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
     case 'bulleted_list_item':
       return (
         <li className="mb-2">
-          <RichTextRenderer richTexts={value.rich_text} />
+          {renderRichText('bulleted_list_item')}
           {renderChildren()}
         </li>
       );
@@ -149,48 +211,37 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
     case 'numbered_list_item':
       return (
         <li className="mb-2">
-          <RichTextRenderer richTexts={value.rich_text} />
+          {renderRichText('numbered_list_item')}
           {renderChildren()}
         </li>
       );
     
-    case 'to_do':
+    case 'to_do': {
+      const todoContent = getBlockContent(block, 'to_do');
+      if (!todoContent || !('rich_text' in todoContent) || !('checked' in todoContent)) return null;
+      
       return (
         <div className="flex items-start gap-2 mb-2">
           <input 
             type="checkbox" 
-            checked={value.checked} 
+            checked={!!todoContent.checked} 
             readOnly 
             className="mt-1.5"
           />
-          <div className={value.checked ? 'line-through text-gray-500' : ''}>
-            <RichTextRenderer richTexts={value.rich_text} />
+          <div className={todoContent.checked ? 'line-through text-gray-500' : ''}>
+            <RichTextRenderer richTexts={todoContent.rich_text as RichText[]} />
             {renderChildren()}
           </div>
         </div>
       );
+    }
     
     case 'image':
-      const imageUrl = value.type === 'external' ? value.external.url : value.file.url;
-      const caption = value.caption && value.caption.length > 0 
-        ? <figcaption className="text-center text-sm text-gray-500 mt-2"><RichTextRenderer richTexts={value.caption} /></figcaption> 
-        : null;
-      
       return (
-        <figure className="my-6">
-          <div className="relative max-w-full h-auto rounded-lg shadow-sm mx-auto overflow-hidden">
-            <Image 
-              src={imageUrl} 
-              alt={caption ? "图片带有说明" : "Notion中的图片"} 
-              className="max-w-full h-auto rounded-lg"
-              width={700}
-              height={400}
-              style={{ objectFit: 'contain' }}
-            />
-          </div>
-          {caption}
+        <div className="my-6">
+          <NotionImage block={block} />
           {renderChildren()}
-        </figure>
+        </div>
       );
     
     case 'divider':
@@ -205,55 +256,80 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <div className="my-4">
           <blockquote className="border-l-4 border-gray-300 pl-4 py-1 italic text-gray-700">
-            <RichTextRenderer richTexts={value.rich_text} />
+            {renderRichText('quote')}
           </blockquote>
           {renderChildren()}
         </div>
       );
     
-    case 'code':
+    case 'code': {
+      const codeContent = getBlockContent(block, 'code');
+      if (!codeContent || !('rich_text' in codeContent)) return null;
+      
+      const language = 'language' in codeContent ? codeContent.language as string : 'plaintext';
+      
       return (
         <div className="my-4">
           <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm font-mono">
-            <code>
-              <RichTextRenderer richTexts={value.rich_text} />
+            <code className={`language-${language}`}>
+              <RichTextRenderer richTexts={codeContent.rich_text as RichText[]} />
             </code>
           </pre>
           {renderChildren()}
         </div>
       );
+    }
       
-    case 'callout':
-      const emoji = value.icon?.emoji;
+    case 'callout': {
+      const calloutContent = getBlockContent(block, 'callout');
+      if (!calloutContent || !('rich_text' in calloutContent) || !('icon' in calloutContent)) return null;
+      
+      // 安全地检查和访问emoji属性
+      let emoji = null;
+      if (calloutContent.icon && 
+          typeof calloutContent.icon === 'object' && 
+          'emoji' in calloutContent.icon && 
+          typeof calloutContent.icon.emoji === 'string') {
+        emoji = calloutContent.icon.emoji;
+      }
+      
       return (
         <div className="my-4 p-4 bg-gray-50 rounded-lg border border-gray-200 flex gap-3">
           {emoji && <div className="text-xl">{emoji}</div>}
           <div>
-            <RichTextRenderer richTexts={value.rich_text} />
+            <RichTextRenderer richTexts={calloutContent.rich_text as RichText[]} />
             {renderChildren()}
           </div>
         </div>
       );
+    }
     
-    case 'bookmark':
+    case 'bookmark': {
+      const bookmarkContent = getBlockContent(block, 'bookmark');
+      if (!bookmarkContent || !('url' in bookmarkContent)) return null;
+      
+      const url = bookmarkContent.url as string;
+      const caption = 'caption' in bookmarkContent ? bookmarkContent.caption as RichText[] : null;
+      
       return (
         <div className="my-4">
           <a 
-            href={value.url} 
+            href={url} 
             target="_blank" 
             rel="noopener noreferrer"
             className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
-            <div className="text-blue-600 font-medium hover:underline">{value.url}</div>
-            {value.caption && value.caption.length > 0 && (
+            <div className="text-blue-600 font-medium hover:underline">{url}</div>
+            {caption && caption.length > 0 && (
               <div className="mt-2 text-sm text-gray-500">
-                <RichTextRenderer richTexts={value.caption} />
+                <RichTextRenderer richTexts={caption} />
               </div>
             )}
           </a>
           {renderChildren()}
         </div>
       );
+    }
     
     default:
       return (

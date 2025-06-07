@@ -1,6 +1,18 @@
 import { getPosts } from '@/lib/notion';
 import Link from 'next/link';
-import type { NotionPage } from '@/lib/notion';
+import type { NotionPage } from '@/lib/notion-types';
+import type { Metadata } from 'next';
+
+// 静态元数据
+export const metadata: Metadata = {
+  title: 'Blog Posts - Velan',
+  description: 'Read the latest articles about development, design, and more.',
+  openGraph: {
+    title: 'Blog Posts - Velan',
+    description: 'Read the latest articles about development, design, and more.',
+    type: 'website',
+  },
+};
 
 export default async function BlogList() {
   const posts: NotionPage[] = await getPosts();
@@ -12,7 +24,8 @@ export default async function BlogList() {
         
         {posts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">404</p>
+            <p className="text-gray-500">No posts found</p>
+            <p className="text-sm mt-2 text-gray-400">Check back later for new content</p>
           </div>
         ) : (
           <ul className="divide-y divide-gray-200 dark:divide-gray-800">

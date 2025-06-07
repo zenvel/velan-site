@@ -1,10 +1,43 @@
 import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
-import type { NotionPage } from '@/lib/notion';
+import type { NotionPage } from '@/lib/notion-types';
+import type { Metadata } from 'next';
 
 type PageParams = {
   slug: string;
 };
+
+// 生成动态元数据
+export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
+  const page = await getPost(params.slug);
+  
+  if (!page) {
+    return {
+      title: '文章不存在',
+      description: '请检查URL或返回博客首页'
+    };
+  }
+  
+  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
+  const summary = page.properties.Summary?.rich_text?.map(text => text.plain_text).join('') || '';
+  
+  return {
+    title,
+    description: summary,
+    openGraph: {
+      title,
+      description: summary,
+      type: 'article',
+      publishedTime: page.properties.Date?.date?.start,
+      authors: ['Velan'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: summary,
+    }
+  };
+}
 
 // 直接使用参数并显式指定类型
 export default async function Post(props: { params: PageParams }) {
