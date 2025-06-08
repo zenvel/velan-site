@@ -15,6 +15,23 @@
       "readBlog": "Read the Blog",
       "aboutMe": "About Me"
     },
+    "features": {
+      "title": "What You'll Find Here",
+      "cards": {
+        "essays": {
+          "title": "In-depth Essays",
+          "desc": "Actionable long-form writing on system thinking, solo entrepreneurship, and digital craft."
+        },
+        "templates": {
+          "title": "Open-source Templates",
+          "desc": "Minimal Notion + Next.js blueprints you can copy for your own workflow."
+        },
+        "logs": {
+          "title": "Build-in-Public Logs",
+          "desc": "Transparent reports on revenue, experiments, and failures of running a one-person business."
+        }
+      }
+    },
     "latestPosts": "Latest Posts",
     "viewAllPosts": "View all"
   },

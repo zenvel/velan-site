@@ -15,6 +15,23 @@
       "readBlog": "阅读博客",
       "aboutMe": "关于我"
     },
+    "features": {
+      "title": "你将在这里看到什么",
+      "cards": {
+        "essays": {
+          "title": "深度文章",
+          "desc": "关于系统思维、一人创业与数字创作的可行性长文写作。"
+        },
+        "templates": {
+          "title": "开源模板",
+          "desc": "适用于你工作流的极简 Notion + Next.js 蓝图。"
+        },
+        "logs": {
+          "title": "公开构建日志",
+          "desc": "关于营收、实验与失败的透明记录，展示一人公司的运行实践。"
+        }
+      }
+    },
     "latestPosts": "最新文章",
     "viewAllPosts": "查看全部"
   },

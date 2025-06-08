@@ -96,22 +96,22 @@ export default function Home() {
 
       {/* Features Grid */}
       <section className="mx-auto max-w-6xl px-6 pb-32">
-        <h2 className="mb-8 text-center text-3xl font-bold">What You&apos;ll Find Here</h2>
+        <h2 className="mb-8 text-center text-3xl font-bold">{t('features.title')}</h2>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              title: "In-depth Essays",
-              desc: "Actionable long-form writing on system thinking, solo entrepreneurship, and digital craft.",
+              title: t('features.cards.essays.title'),
+              desc: t('features.cards.essays.desc'),
               icon: "📝",
             },
             {
-              title: "Open-source Templates",
-              desc: "Minimal Notion + Next.js blueprints you can copy for your own workflow.",
+              title: t('features.cards.templates.title'),
+              desc: t('features.cards.templates.desc'),
               icon: "📂",
             },
             {
-              title: "Build-in-Public Logs",
-              desc: "Transparent reports on revenue, experiments, and failures of running a one-person business.",
+              title: t('features.cards.logs.title'),
+              desc: t('features.cards.logs.desc'),
               icon: "📈",
             },
           ].map((f) => (
