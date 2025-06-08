@@ -50,7 +50,7 @@ export default async function BlogList() {
             <p className="text-sm mt-2 text-gray-400">Check back later for new content</p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+          <ul className="grid gap-8">
             {posts.map((p: NotionPage, index: number) => {
               try {
                 // 添加安全检查
@@ -70,88 +70,50 @@ export default async function BlogList() {
                 const formattedDate = formatDate(date);
                 
                 return (
-                  <li key={p.id} className="py-8 first:pt-0 last:pb-0 group">
-                    <article className="sm:flex gap-6">
-                      {/* 封面图片区域 */}
-                      <div className="sm:w-1/3 mb-4 sm:mb-0">
-                        <Link href={`/en/blog/${slug}`} className="block rounded-lg overflow-hidden">
-                          {coverUrl ? (
-                            <img 
-                              src={coverUrl} 
-                              alt={title}
-                              className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div 
-                              className="w-full h-40 flex items-center justify-center"
-                              style={{ background: DEFAULT_COVER_GRADIENT }}
-                            >
-                              <div className="text-center text-white">
-                                <div className="text-4xl mb-2">{defaultPattern.emoji}</div>
-                                <div className="text-sm font-medium">{title}</div>
-                              </div>
-                            </div>
-                          )}
-                        </Link>
-                      </div>
-                      
-                      {/* 文章内容区域 */}
-                      <div className="sm:w-2/3">
-                        <div className="space-y-2 mb-3">
-                          <Link 
-                            href={`/en/blog/${slug}`} 
-                            className="block text-2xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition"
-                          >
-                            {title}
-                          </Link>
-                          
-                          <div className="flex flex-wrap gap-3 items-center">
-                            {date && (
-                              <time className="text-sm text-gray-500 dark:text-gray-400" dateTime={date}>
-                                {formattedDate}
-                              </time>
-                            )}
-                            
-                            {tags.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {tags.map((tag) => (
-                                  <span 
-                                    key={tag.id} 
-                                    className="px-3 py-1 text-sm rounded-full"
-                                    style={{ 
-                                      backgroundColor: tag.color === 'green' ? '#E6F6EC' : 
-                                                      tag.color === 'brown' ? '#F9E8D9' : '#F0F0F0',
-                                      color: tag.color === 'green' ? '#0E6245' : 
-                                            tag.color === 'brown' ? '#8D4A00' : '#333333'
-                                    }}
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                  <li key={p.id} className="group transition-all">
+                    <Link href={`/en/blog/${slug}`}>
+                      <article className="rounded-2xl bg-white dark:bg-gray-800/50 border dark:border-gray-700 shadow-sm hover:shadow-md transition overflow-hidden">
+                        {/* 封面图 */}
+                        {coverUrl ? (
+                          <img
+                            src={coverUrl}
+                            alt={title}
+                            className="w-full h-48 object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-48 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-400 text-white text-3xl">
+                            {defaultPattern.emoji}
                           </div>
-                        </div>
-                        
-                        {summary.length > 0 && (
-                          <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-                            {summary.map((text) => text.plain_text).join('')}
-                          </p>
                         )}
-                        
-                        <div className="mt-4">
-                          <Link 
-                            href={`/en/blog/${slug}`}
-                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center gap-1"
-                          >
-                            阅读全文
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                          </Link>
+
+                        <div className="p-6 space-y-3">
+                          {/* 时间 + 标签 */}
+                          <div className="flex flex-wrap justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                            <time>{formattedDate}</time>
+                            <div className="flex gap-2">
+                              {tags.map((tag) => (
+                                <span
+                                  key={tag.id}
+                                  className="rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1"
+                                >
+                                  {tag.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 标题 */}
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
+
+                          {/* 摘要 */}
+                          {summary.length > 0 && (
+                            <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
+                              {summary.map((text) => text.plain_text).join('')}
+                            </p>
+                          )}
                         </div>
-                      </div>
-                    </article>
+                      </article>
+                    </Link>
                   </li>
                 );
               } catch (error) {
