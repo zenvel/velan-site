@@ -29,7 +29,7 @@ function SkeletonCard() {
 // 博客文章预览
 export default function BlogPreview() {
   // 获取翻译文本
-  const t = useTranslations();
+  const t = useTranslations('Home');
   // 获取当前语言
   const params = useParams();
   const locale = params.locale as string || 'en';
@@ -63,10 +63,10 @@ export default function BlogPreview() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-24">
       <div className="mb-12 flex items-baseline justify-between">
-        <h2 className="text-3xl font-bold">{t('home.latestPosts')}</h2>
+        <h2 className="text-3xl font-bold">{t('latestPosts')}</h2>
         <Button asChild variant="link" className="gap-1">
           <Link href={`/${locale}/blog`} className="flex items-center text-blue-600 dark:text-blue-400">
-            {t('home.viewAllPosts')} <ArrowRight className="h-4 w-4" />
+            {t('viewAllPosts')} <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
       </div>

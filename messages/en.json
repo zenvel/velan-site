@@ -5,12 +5,15 @@
     "about": "About",
     "contact": "Contact"
   },
-  "home": {
+  "Home": {
     "hero": {
       "title1": "Build ",
-      "title2": ", Craft ",
-      "title3": "",
-      "subtitle": "Solo system builder documenting the journey of designing intentional digital products and workflows."
+      "title2": "Systems",
+      "title3": "Craft ",
+      "title4": "Clarity",
+      "description": "I'm Velan-solo system builder documenting the journey of designing intentional digital products and workflows.",
+      "readBlog": "Read the Blog",
+      "aboutMe": "About Me"
     },
     "latestPosts": "Latest Posts",
     "viewAllPosts": "View all"

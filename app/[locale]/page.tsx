@@ -18,7 +18,9 @@ import { useParams } from 'next/navigation';
  */
 export default function Home() {
   // 获取翻译文本
-  const t = useTranslations();
+  const t = useTranslations('Home');
+  const footerT = useTranslations();
+  const navT = useTranslations();
   const params = useParams();
   const locale = params.locale as string || 'en';
   
@@ -74,20 +76,20 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="text-6xl md:text-7xl font-extrabold leading-tight tracking-tight"
         >
-          {t('home.hero.title1')}<span className="text-blue-600 dark:text-blue-400">Systems</span>{t('home.hero.title2')}
-          <span className="text-blue-600 dark:text-blue-400">Clarity</span>{t('home.hero.title3')}
+          {t('hero.title1')}<span className="text-blue-600 dark:text-blue-400">{t('hero.title2')}</span><br />
+          {t('hero.title3')}<span className="text-blue-600 dark:text-blue-400">{t('hero.title4')}</span>
         </motion.h1>
         <p className="mx-auto mt-10 max-w-[60ch] text-2xl leading-relaxed text-gray-500 dark:text-gray-400">
-          {t('home.hero.subtitle')}
+          {t('hero.description')}
         </p>
         <div className="mt-14 flex flex-wrap justify-center gap-4">
           <Button asChild size="lg">
             <Link href={`/${locale}/blog`} className="inline-flex items-center gap-2">
-              {t('nav.blog')} <ArrowRight className="h-4 w-4" />
+              {t('hero.readBlog')} <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href={`/${locale}/about`}>{t('nav.about')}</Link>
+            <Link href={`/${locale}/about`}>{t('hero.aboutMe')}</Link>
           </Button>
         </div>
       </section>
@@ -176,11 +178,11 @@ export default function Home() {
           </svg>
         </div>
         
-        <p className="mb-2">{t('footer.slogan')}</p>
+        <p className="mb-2">{footerT('footer.slogan')}</p>
         <p>
           © {new Date().getFullYear()} <span className="text-white font-medium">Velan</span> — Powered by Next.js & Notion —
           <Link href={`/${locale}/about`} className="ml-1 underline hover:text-white transition-colors">
-            {t('nav.about')}
+            {navT('nav.about')}
           </Link>
         </p>
       </footer>
