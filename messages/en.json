@@ -5,6 +5,12 @@
     "about": "About",
     "contact": "Contact"
   },
+  "newsletter": {
+    "title": "Join the Velan Letter",
+    "description": "One concise email each month on building systems & living deliberately.",
+    "placeholder": "your@email.com",
+    "button": "Subscribe"
+  },
   "Home": {
     "hero": {
       "title1": "Build ",

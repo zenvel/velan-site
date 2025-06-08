@@ -5,6 +5,12 @@
     "about": "关于",
     "contact": "联系"
   },
+  "newsletter": {
+    "title": "订阅 Velan 通讯",
+    "description": "每月一封简洁邮件，分享系统构建与有意识生活方式。",
+    "placeholder": "你的邮箱地址",
+    "button": "订阅"
+  },
   "Home": {
     "hero": {
       "title1": "构建",
