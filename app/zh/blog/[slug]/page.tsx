@@ -1,10 +1,7 @@
 import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
-import type { NotionPage } from '@/lib/notion-types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
 
 export const dynamicParams = true;
 
@@ -16,7 +13,6 @@ type PageProps = {
 };
 
 // 默认封面图片配置
-const DEFAULT_COVER_GRADIENT = 'linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)';
 const DEFAULT_EMOJI = '📝';
 
 // 格式化日期的辅助函数，确保服务端和客户端渲染一致
@@ -141,4 +137,4 @@ export default async function Page(props: PageProps) {
       </div>
     </article>
   );
-}
+} 

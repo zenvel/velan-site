@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "home": "首页",
+    "blog": "博客",
+    "about": "关于",
+    "contact": "联系"
+  },
+  "home": {
+    "hero": {
+      "title1": "构建",
+      "title2": "，锻造",
+      "title3": "",
+      "subtitle": "独立系统构建者，记录设计有意图的数字产品与工作流的旅程"
+    },
+    "latestPosts": "最新文章",
+    "viewAllPosts": "查看全部"
+  },
+  "blog": {
+    "title": "博客",
+    "subtitle": "分享关于系统思考、产品设计和独立创业的思考"
+  },
+  "footer": {
+    "slogan": "清晰系统，有意之作"
+  }
+} 

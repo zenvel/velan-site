@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "home": "Home",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "home": {
+    "hero": {
+      "title1": "Build ",
+      "title2": ", Craft ",
+      "title3": "",
+      "subtitle": "Solo system builder documenting the journey of designing intentional digital products and workflows."
+    },
+    "latestPosts": "Latest Posts",
+    "viewAllPosts": "View all"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Thoughts on systems thinking, product design, and solo entrepreneurship"
+  },
+  "footer": {
+    "slogan": "Clear systems, intentional craft"
+  }
+} 
