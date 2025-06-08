@@ -122,25 +122,33 @@ export default function Home() {
       <BlogPreview />
 
       {/* Newsletter CTA */}
-      <section className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 py-14 px-8 text-center text-white dark:bg-blue-500">
-        <h2 className="text-3xl font-bold">Join the Velan Letter</h2>
-        <p className="mx-auto mt-3 max-w-md text-lg">
-          One concise email each month on building systems & living deliberately.
+      <section className="relative mx-auto max-w-4xl rounded-3xl px-8 py-20 text-center text-white overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 shadow-xl">
+        {/* 背景发光层 */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-2xl opacity-20" width="800" height="800">
+            <circle cx="400" cy="400" r="300" fill="#ffffff" fillOpacity="0.1" />
+          </svg>
+        </div>
+
+        <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Join the Velan Letter</h2>
+        <p className="mx-auto mt-4 max-w-2xl text-lg sm:text-xl text-white/90">
+          A monthly dispatch on system building, solo strategy, and clarity-first design.
         </p>
+
         <form
           action="https://buttondown.email/api/subscribers"
           method="post"
           target="_blank"
-          className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-center"
+          className="mt-8 flex flex-col sm:flex-row sm:justify-center gap-4"
         >
           <input
             type="email"
             name="email"
             required
-            placeholder="your@email.com"
-            className="w-full rounded-md px-4 py-3 text-black placeholder-gray-400 bg-white/95 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            placeholder="Enter your email"
+            className="w-full rounded-md px-4 py-3 text-black placeholder-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-white/60"
           />
-          <Button type="submit" size="lg" className="w-full sm:w-auto">
+          <Button type="submit" size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100">
             Subscribe
           </Button>
         </form>
