@@ -1,158 +1,173 @@
-import { getPost } from '@/lib/notion';
-import NotionRenderer from '@/components/notion/NotionRenderer';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import BlogLocaleSwitcher from '@/components/BlogLocaleSwitcher';
-import { getTranslations } from 'next-intl/server';
+'use client';
 
-export const dynamicParams = true;
+import React from 'react';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import Footer from '@/components/Footer';
+import LocalizedHead from '@/components/LocalizedHead';
 
-// 类型定义
-interface PageProps {
-  params: {
-    slug: string;
-    locale: string;
-  };
-}
-
-// 默认封面图片配置
-const DEFAULT_EMOJI = '📝';
-
-// 格式化日期的辅助函数，确保服务端和客户端渲染一致
-function formatDate(dateString: string | undefined, locale: string) {
-  if (!dateString) return '';
-  try {
-    const date = new Date(dateString);
-    
-    if (locale === 'zh') {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}年${month}月${day}日`;
-    } else {
-      // 英文日期格式
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
-  } catch (error) {
-    console.error('日期格式化错误:', error);
-    return dateString;
-  }
-}
-
-// 生成动态元数据
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
-  const { slug, locale } = props.params;
-  const t = await getTranslations({ locale, namespace: 'Blog' });
-  const page = await getPost(slug);
+export default function BlogPost() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const locale = params.locale as string || 'en';
+  const t = useTranslations('BlogPost');
   
-  if (!page) {
-    return {
-      title: t('notFound.title'),
-      description: t('notFound.description')
-    };
-  }
-  
-  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
-  const summary = page.properties.Summary?.rich_text?.map(text => text.plain_text).join('') || '';
-  
-  return {
-    title,
-    description: summary,
-    openGraph: {
-      title,
-      description: summary,
-      type: 'article',
-      publishedTime: page.properties.Date?.date?.start,
-      authors: ['Velan'],
+  // 本地存储的示例博客文章数据 - 实际应用中这会从API或CMS获取
+  const postData = {
+    'build-nextjs-i18n': {
+      title: t('posts.i18n.title'),
+      date: '2023-11-15',
+      image: '/blog/i18n-cover.jpg',
+      category: t('categories.dev'),
+      content: t('posts.i18n.content'),
     },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description: summary,
+    'design-system-approach': {
+      title: t('posts.design.title'),
+      date: '2023-10-20',
+      image: '/blog/design-cover.jpg',
+      category: t('categories.design'),
+      content: t('posts.design.content'),
+    },
+    'future-web-animations': {
+      title: t('posts.animations.title'),
+      date: '2023-09-05',
+      image: '/blog/animations-cover.jpg',
+      category: t('categories.frontend'),
+      content: t('posts.animations.content'),
+    },
+    'serverless-architecture': {
+      title: t('posts.serverless.title'),
+      date: '2023-08-12',
+      image: '/blog/serverless-cover.jpg',
+      category: t('categories.backend'),
+      content: t('posts.serverless.content'),
+    },
+    'typesafe-state-management': {
+      title: t('posts.typescript.title'),
+      date: '2023-07-28',
+      image: '/blog/typescript-cover.jpg',
+      category: t('categories.dev'),
+      content: t('posts.typescript.content'),
+    },
+    'progressive-web-apps': {
+      title: t('posts.pwa.title'),
+      date: '2023-06-15',
+      image: '/blog/pwa-cover.jpg',
+      category: t('categories.frontend'),
+      content: t('posts.pwa.content'),
     }
   };
-}
-
-// 页面组件
-export default async function Page(props: PageProps) {
-  const { slug, locale } = props.params;
-  const t = await getTranslations({ locale, namespace: 'Blog' });
-  const page = await getPost(slug);
   
-  // 如果找不到页面，返回404
-  if (!page) {
-    return notFound();
+  // 检查文章是否存在
+  const post = postData[slug as keyof typeof postData];
+  
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">{t('notFound.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('notFound.message')}</p>
+          <Button asChild>
+            <Link href={`/${locale}/blog`}>{t('notFound.backButton')}</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
-
-  // 获取Summary内容，用于显示在文章开头
-  const summaryText = page.properties.Summary?.rich_text?.map((text) => text.plain_text).join('') || '';
-  // 获取封面图片URL
-  const coverUrl = page.cover?.file?.url || page.cover?.external?.url;
-  // 获取标题
-  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
-  // 格式化日期
-  const date = page.properties.Date?.date?.start;
-  const formattedDate = formatDate(date, locale);
-
+  
   return (
-    <article className="max-w-3xl mx-auto rounded-2xl bg-white dark:bg-gray-900 px-6 py-10 shadow-sm">
-      <BlogLocaleSwitcher />
-      <header>
-        {/* 封面区域 */}
-        <div className="mb-8 overflow-hidden rounded-xl">
-          {coverUrl ? (
-            <img src={coverUrl} alt={title} className="w-full h-[300px] object-cover" />
-          ) : (
-            <div className="w-full h-[300px] flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-400 text-white">
-              <div className="text-center">
-                <div className="text-6xl mb-2">{DEFAULT_EMOJI}</div>
-                <div className="text-xl font-semibold">{title}</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 标题 */}
-        <h1 className="text-4xl font-extrabold leading-tight tracking-tight mb-6 text-center">{title}</h1>
-
-        {/* 时间和标签 */}
-        <div className="flex flex-wrap justify-center gap-3 mb-6 text-sm text-gray-500">
-          {date && <time dateTime={date}>{formattedDate}</time>}
-          {page.properties.Tags?.multi_select?.map(tag => (
-            <span key={tag.id} className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs">
-              {tag.name}
-            </span>
-          ))}
-        </div>
-
-        {/* 引言 */}
-        {summaryText && (
-          <div className="text-lg text-gray-600 dark:text-gray-400 italic text-center border-l-4 border-gray-200 dark:border-gray-700 pl-4 bg-gradient-to-r from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 rounded mb-8">
-            <span className="font-semibold">{t('post.summaryNote')}:</span> {summaryText}
-          </div>
-        )}
-      </header>
-
-      {/* 正文 */}
-      <div className="markdown-content prose prose-lg dark:prose-invert">
-        {page.blocks && page.blocks.length > 0 ? (
-          <NotionRenderer blocks={page.blocks} />
-        ) : (
-          <div className="text-center py-10 text-gray-500">
-            {t('post.emptyContent')}
-          </div>
-        )}
-      </div>
+    <>
+      <LocalizedHead 
+        titleKey={`posts.${slug}.title`} 
+        descriptionKey={`posts.${slug}.excerpt`}
+        namespace="Blog" 
+      />
       
-      <div className="mt-10 text-center">
-        <a href={`/${locale}/blog`} className="text-blue-600 hover:underline dark:text-blue-400">
-          {t('backToBlog')}
-        </a>
-      </div>
-    </article>
+      <main className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
+        {/* 返回按钮 */}
+        <div className="max-w-4xl mx-auto pt-8 px-6">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/${locale}/blog`} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              {t('backToBlog')}
+            </Link>
+          </Button>
+        </div>
+        
+        {/* 博客文章头部 */}
+        <article className="max-w-4xl mx-auto px-6 py-12">
+          <header className="mb-12">
+            <div className="flex items-center gap-4 mb-4 text-sm">
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full font-medium">
+                {post.category}
+              </span>
+              <time className="text-gray-500 dark:text-gray-400">
+                {post.date}
+              </time>
+            </div>
+            
+            <h1 className="text-3xl md:text-4xl font-bold mb-6">{post.title}</h1>
+            
+            <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden mb-8">
+              <Image
+                src={post.image}
+                alt={post.title}
+                fill
+                style={{ objectFit: "cover" }}
+                priority
+              />
+            </div>
+          </header>
+          
+          {/* 博客内容 */}
+          <div className="prose dark:prose-invert prose-lg max-w-none">
+            {post.content.split('\n\n').map((paragraph, idx) => (
+              <p key={idx}>{paragraph}</p>
+            ))}
+          </div>
+        </article>
+        
+        {/* 相关文章推荐 */}
+        <section className="max-w-4xl mx-auto px-6 py-12 border-t border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold mb-8">{t('relatedPosts')}</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            {Object.entries(postData)
+              .filter(([key]) => key !== slug)
+              .slice(0, 2)
+              .map(([key, relatedPost]) => (
+                <Link
+                  key={key}
+                  href={`/${locale}/blog/${key}`}
+                  className="flex gap-4 items-start group"
+                >
+                  <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+                    <Image
+                      src={relatedPost.image}
+                      alt={relatedPost.title}
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {relatedPost.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {relatedPost.date}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </section>
+        
+        {/* Footer */}
+        <Footer />
+      </main>
+    </>
   );
 } 
