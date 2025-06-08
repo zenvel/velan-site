@@ -125,5 +125,10 @@
     "slogan": "Clear systems, intentional craft",
     "builtWith": "Built with Next.js & Notion",
     "about": "About"
+  },
+  "NotFound": {
+    "message": "Oops! Page not found.",
+    "backHome": "Back to homepage",
+    "tryAgain": "Try Again"
   }
 } 
