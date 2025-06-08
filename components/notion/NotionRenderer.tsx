@@ -1,6 +1,5 @@
 import React from 'react';
-import NotionBlock from './NotionBlock';
-import { NotionBlock as NotionBlockType } from '@/lib/notion';
+import NotionBlock, { NotionBlock as NotionBlockType } from './NotionBlock';
 
 interface NotionRendererProps {
   blocks: NotionBlockType[];

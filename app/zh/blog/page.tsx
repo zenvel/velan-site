@@ -1,7 +1,7 @@
 import { getPosts } from '@/lib/notion';
 import Link from 'next/link';
-import type { NotionPage } from '@/lib/notion-types';
 import type { Metadata } from 'next';
+import { JoinedPost } from '@/lib/notion-types';
 
 // 默认封面图片配置
 const DEFAULT_COVER_PATTERNS = [
@@ -39,7 +39,9 @@ function formatDate(dateString: string | undefined) {
 }
 
 export default async function BlogList() {
-  const posts: NotionPage[] = await getPosts();
+  console.log("获取中文博客文章列表");
+  const posts = await getPosts('zh');
+  console.log(`获取到 ${posts.length} 篇中文文章`);
   
   return (
     <div className="bg-white dark:bg-gray-900">
@@ -53,15 +55,10 @@ export default async function BlogList() {
           </div>
         ) : (
           <ul className="grid gap-8">
-            {posts.map((p: NotionPage, index: number) => {
+            {posts.map((post: JoinedPost, index: number) => {
               try {
                 // 添加安全检查
-                const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
-                const title = p.properties?.Title?.title?.[0]?.plain_text;
-                const date = p.properties?.Date?.date?.start;
-                const tags = p.properties?.Tags?.multi_select || [];
-                const summary = p.properties?.Summary?.rich_text || [];
-                const coverUrl = p.cover?.file?.url || p.cover?.external?.url;
+                const { slug, title, date, tags, summary, coverUrl } = post;
                 
                 // 为标题选择默认emoji
                 const defaultPattern = DEFAULT_COVER_PATTERNS[index % DEFAULT_COVER_PATTERNS.length];
@@ -72,7 +69,7 @@ export default async function BlogList() {
                 const formattedDate = formatDate(date);
                 
                 return (
-                  <li key={p.id} className="group transition-all">
+                  <li key={post.id} className="group transition-all">
                     <Link href={`/zh/blog/${slug}`}>
                       <article className="rounded-2xl bg-white dark:bg-gray-800/50 border dark:border-gray-700 shadow-sm hover:shadow-md transition overflow-hidden">
                         {/* 封面图 */}
@@ -93,12 +90,12 @@ export default async function BlogList() {
                           <div className="flex flex-wrap justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                             <time suppressHydrationWarning>{formattedDate}</time>
                             <div className="flex gap-2">
-                              {tags.map((tag) => (
+                              {tags && tags.length > 0 && tags.map((tag, idx) => (
                                 <span
-                                  key={tag.id}
+                                  key={idx}
                                   className="rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1"
                                 >
-                                  {tag.name}
+                                  {tag}
                                 </span>
                               ))}
                             </div>
@@ -108,9 +105,9 @@ export default async function BlogList() {
                           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
 
                           {/* 摘要 */}
-                          {summary.length > 0 && (
+                          {summary && (
                             <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
-                              {summary.map((text) => text.plain_text).join('')}
+                              {summary}
                             </p>
                           )}
                         </div>

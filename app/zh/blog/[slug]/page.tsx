@@ -3,6 +3,7 @@ import NotionRenderer from '@/components/notion/NotionRenderer';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import BlogLocaleSwitcher from '@/components/BlogLocaleSwitcher';
+import { JoinedPost } from '@/lib/notion-types';
 
 export const dynamicParams = true;
 
@@ -37,32 +38,30 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   // 等待参数解析
   const resolvedParams = await props.params;
   const slug = resolvedParams.slug;
-  const page = await getPost(slug);
+  console.log(`生成中文文章元数据，slug: ${slug}`);
+  const post = await getPost(slug, 'zh');
   
-  if (!page) {
+  if (!post) {
     return {
       title: '文章不存在',
       description: '请检查URL或返回博客首页'
     };
   }
   
-  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
-  const summary = page.properties.Summary?.rich_text?.map(text => text.plain_text).join('') || '';
-  
   return {
-    title,
-    description: summary,
+    title: post.title || 'Untitled',
+    description: post.summary || '',
     openGraph: {
-      title,
-      description: summary,
+      title: post.title || 'Untitled',
+      description: post.summary || '',
       type: 'article',
-      publishedTime: page.properties.Date?.date?.start,
+      publishedTime: post.date,
       authors: ['Velan'],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description: summary,
+      title: post.title || 'Untitled',
+      description: post.summary || '',
     }
   };
 }
@@ -72,22 +71,20 @@ export default async function Page(props: PageProps) {
   // 等待参数解析
   const resolvedParams = await props.params;
   const slug = resolvedParams.slug;
-  const page = await getPost(slug);
+  console.log(`获取中文文章详情，slug: ${slug}`);
+  const post = await getPost(slug, 'zh');
   
   // 如果找不到页面，返回404
-  if (!page) {
+  if (!post) {
+    console.log(`找不到中文文章: ${slug}`);
     return notFound();
   }
 
+  console.log(`找到中文文章: ${post.title}`);
   // 获取Summary内容，用于显示在文章开头
-  const summaryText = page.properties.Summary?.rich_text?.map((text) => text.plain_text).join('') || '';
-  // 获取封面图片URL
-  const coverUrl = page.cover?.file?.url || page.cover?.external?.url;
-  // 获取标题
-  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
+  const summaryText = post.summary || '';
   // 格式化日期
-  const date = page.properties.Date?.date?.start;
-  const formattedDate = formatDate(date);
+  const formattedDate = formatDate(post.date);
 
   return (
     <article className="max-w-3xl mx-auto rounded-2xl bg-white dark:bg-gray-900 px-6 py-10 shadow-sm">
@@ -95,27 +92,27 @@ export default async function Page(props: PageProps) {
       <header>
         {/* 封面区域 */}
         <div className="mb-8 overflow-hidden rounded-xl">
-          {coverUrl ? (
-            <img src={coverUrl} alt={title} className="w-full h-[300px] object-cover" />
+          {post.coverUrl ? (
+            <img src={post.coverUrl} alt={post.title} className="w-full h-[300px] object-cover" />
           ) : (
             <div className="w-full h-[300px] flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-400 text-white">
               <div className="text-center">
                 <div className="text-6xl mb-2">{DEFAULT_EMOJI}</div>
-                <div className="text-xl font-semibold">{title}</div>
+                <div className="text-xl font-semibold">{post.title}</div>
               </div>
             </div>
           )}
         </div>
 
         {/* 标题 */}
-        <h1 className="text-4xl font-extrabold leading-tight tracking-tight mb-6 text-center">{title}</h1>
+        <h1 className="text-4xl font-extrabold leading-tight tracking-tight mb-6 text-center">{post.title}</h1>
 
         {/* 时间和标签 */}
         <div className="flex flex-wrap justify-center gap-3 mb-6 text-sm text-gray-500">
-          {date && <time dateTime={date} suppressHydrationWarning>{formattedDate}</time>}
-          {page.properties.Tags?.multi_select?.map(tag => (
-            <span key={tag.id} className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs">
-              {tag.name}
+          {post.date && <time dateTime={post.date} suppressHydrationWarning>{formattedDate}</time>}
+          {post.tags && post.tags.length > 0 && post.tags.map((tag, index) => (
+            <span key={index} className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs">
+              {tag}
             </span>
           ))}
         </div>
@@ -130,8 +127,8 @@ export default async function Page(props: PageProps) {
 
       {/* 正文 */}
       <div className="markdown-content prose prose-lg dark:prose-invert">
-        {page.blocks && page.blocks.length > 0 ? (
-          <NotionRenderer blocks={page.blocks} />
+        {post.blocks && post.blocks.length > 0 ? (
+          <NotionRenderer blocks={post.blocks} />
         ) : (
           /* 这里是Notion内容为空的情况，我们可以显示Summary内容，或者什么都不显示 */
           <div>{summaryText || ''}</div>

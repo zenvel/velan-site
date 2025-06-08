@@ -1,9 +1,82 @@
 import React from 'react';
 import Image from 'next/image';
-import type { RichText, NotionBlock as NotionBlockType } from '@/lib/notion-types';
+
+// 添加基本的 Notion 类型定义
+export interface RichText {
+  plain_text: string;
+  href: string | null;
+  annotations: {
+    bold: boolean;
+    italic: boolean;
+    strikethrough: boolean;
+    underline: boolean;
+    code: boolean;
+    color: string;
+  };
+  text?: {
+    content: string;
+    link: { url: string } | null;
+  };
+}
+
+export interface NotionBlock {
+  id: string;
+  type: string;
+  has_children: boolean;
+  children?: NotionBlock[];
+  
+  // 文本块
+  paragraph?: { rich_text: RichText[]; color: string };
+  heading_1?: { rich_text: RichText[]; color: string };
+  heading_2?: { rich_text: RichText[]; color: string };
+  heading_3?: { rich_text: RichText[]; color: string };
+  bulleted_list_item?: { rich_text: RichText[]; color: string };
+  numbered_list_item?: { rich_text: RichText[]; color: string };
+  
+  // 任务块
+  to_do?: { rich_text: RichText[]; checked: boolean; color: string };
+  
+  // 引用块
+  quote?: { rich_text: RichText[]; color: string };
+  
+  // 代码块
+  code?: { rich_text: RichText[]; caption: RichText[]; language: string };
+  
+  // 分割线
+  divider?: Record<string, never>;
+  
+  // 图片
+  image?: {
+    caption: RichText[];
+    type: 'external' | 'file';
+    external?: { url: string };
+    file?: { url: string; expiry_time: string };
+  };
+  
+  // 提醒块
+  callout?: {
+    rich_text: RichText[];
+    icon: {
+      type: 'emoji' | 'external' | 'file';
+      emoji?: string;
+      external?: { url: string };
+      file?: { url: string; expiry_time: string };
+    };
+    color: string;
+  };
+  
+  // 书签
+  bookmark?: {
+    url: string;
+    caption: RichText[];
+  };
+  
+  // 其他属性
+  [key: string]: any;
+}
 
 interface BlockProps {
-  block: NotionBlockType;
+  block: NotionBlock;
   level?: number;
 }
 
@@ -84,7 +157,7 @@ const RichTextRenderer = ({ richTexts }: { richTexts: RichText[] }) => {
 /**
  * 图片组件，支持图片类型检测和加载优化
  */
-const NotionImage = ({ block }: { block: NotionBlockType }) => {
+const NotionImage = ({ block }: { block: NotionBlock }) => {
   if (!block.image) return null;
   
   let imageUrl = '';
@@ -124,8 +197,8 @@ const NotionImage = ({ block }: { block: NotionBlockType }) => {
 };
 
 // 类型安全的获取块内容的辅助函数
-const getBlockContent = (block: NotionBlockType, type: string) => {
-  const content = block[type as keyof NotionBlockType];
+const getBlockContent = (block: NotionBlock, type: string) => {
+  const content = block[type as keyof NotionBlock];
   return content && typeof content === 'object' ? content : null;
 };
 

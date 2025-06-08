@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import type { NotionPage } from '@/lib/notion-types';
+import type { JoinedPost } from '../lib/notion-types';
 
 // 加载状态的骨架屏
 function SkeletonCard() {
@@ -35,7 +35,7 @@ export default function BlogPreview() {
   const locale = params.locale as string || 'en';
   
   // 状态管理
-  const [posts, setPosts] = useState<NotionPage[]>([]);
+  const [posts, setPosts] = useState<JoinedPost[]>([]);
   const [loading, setLoading] = useState(true);
   
   // 从服务器获取数据
@@ -43,7 +43,8 @@ export default function BlogPreview() {
     async function fetchPosts() {
       try {
         setLoading(true);
-        const response = await fetch('/api/posts');
+        // 使用当前语言参数获取文章
+        const response = await fetch(`/api/posts?lang=${locale}`);
         if (!response.ok) throw new Error('Failed to fetch posts');
         const data = await response.json();
         setPosts(data.slice(0, 3)); // 只显示前3篇
@@ -55,7 +56,7 @@ export default function BlogPreview() {
     }
     
     fetchPosts();
-  }, []);
+  }, [locale]); // 添加 locale 作为依赖项，当语言变化时重新获取
   
   // 默认的无文章提示文本
   const noPostsText = '暂无博客文章';
@@ -77,18 +78,15 @@ export default function BlogPreview() {
           Array(3).fill(0).map((_, index) => <SkeletonCard key={index} />)
         ) : posts.length > 0 ? (
           // 显示文章列表
-          posts.map((post) => {
-            const slug = post.properties?.Slug?.rich_text?.[0]?.plain_text || '';
-            const title = post.properties?.Title?.title?.[0]?.plain_text || 'Untitled';
-            const date = post.properties?.Date?.date?.start || '';
-            const tags = post.properties?.Tags?.multi_select || [];
-            const summary = post.properties?.Summary?.rich_text?.map(t => t.plain_text).join('') || '';
-            const coverUrl = post.cover?.file?.url || post.cover?.external?.url;
+          posts.map((post, index) => {
+            // 直接使用 JoinedPost 类型的属性
+            const { title, slug, date, tags = [], summary = '' } = post;
+            const coverUrl = post.coverUrl;
             
             // 如果没有真实文章数据，使用示例帖子
-            if (!title || title === 'Untitled') {
+            if (!title) {
               return (
-                <Link key={post.id || 'sample'} href="#">
+                <Link key={post.id || `sample-${index}`} href="#">
                   <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
                     <div className="aspect-video overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)" }}>
                       <div className="flex h-full w-full items-center justify-center text-white">
@@ -117,11 +115,11 @@ export default function BlogPreview() {
               "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)",
               "linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)"
             ];
-            const gradient = gradients[posts.indexOf(post) % gradients.length];
+            const gradient = gradients[index % gradients.length];
             
             // 为每篇文章选择一个图标
             const icons = ["📊", "⚙️", "📈", "📝", "💡"];
-            const icon = icons[posts.indexOf(post) % icons.length];
+            const icon = icons[index % icons.length];
             
             return (
               <Link key={post.id} href={`/${locale}/blog/${slug}`}>
@@ -142,16 +140,18 @@ export default function BlogPreview() {
                     )}
                   </div>
                   <div className="p-6">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {tags.slice(0, 2).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                    </div>
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {tags.slice(0, 3).map((tag: string, i: number) => (
+                          <span
+                            key={i}
+                            className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <h3 className="mb-2 text-xl font-bold">{title}</h3>
                     <p className="mb-4 text-gray-600 dark:text-gray-400 line-clamp-2">
                       {summary}
