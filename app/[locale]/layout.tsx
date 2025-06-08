@@ -20,13 +20,25 @@ export function generateStaticParams() {
 
 // 元数据生成函数
 export async function generateMetadata({ 
-  params 
+  params
 }: { 
-  params: { locale: string } | Promise<{ locale: string }> 
+  params: { locale: string } | Promise<{ locale: string }>;
 }): Promise<Metadata> {
   // 等待参数解析
   const resolvedParams = await Promise.resolve(params);
   const locale = resolvedParams.locale || 'en';
+  
+  // 构建规范化URL
+  const baseUrl = 'https://velan.zenvel.io';
+  
+  // 为不同语言版本创建alternates对象
+  const alternates = {
+    canonical: `${baseUrl}/${locale}`,
+    languages: {
+      'en': `${baseUrl}/en`,
+      'zh': `${baseUrl}/zh`,
+    }
+  };
   
   const t = await getTranslations({ 
     locale, 
@@ -38,11 +50,12 @@ export async function generateMetadata({
   return {
     title: t('home.title'),
     description: t('home.description'),
-    metadataBase: new URL('https://velan.zenvel.io'),
+    metadataBase: new URL(baseUrl),
+    alternates,
     openGraph: {
       title: t('home.title'),
       description: t('home.description'),
-      url: 'https://velan.zenvel.io',
+      url: `${baseUrl}/${locale}`,
       siteName: 'Velan',
       images: [
         {

@@ -1,32 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
 
 // 支持的语言列表
-const LOCALES = ['en', 'zh'];
-const DEFAULT_LOCALE = 'en';
+const locales = ['en', 'zh'];
 
-export function middleware(request: NextRequest) {
-  // 获取请求路径
-  const { pathname } = request.nextUrl;
-  
-  // 如果路径已经包含语言前缀，直接通过
-  if (LOCALES.some(locale => pathname.startsWith(`/${locale}`))) {
-    return NextResponse.next();
-  }
+// 创建国际化中间件
+const middleware = createMiddleware({
+  // 必须匹配所有支持的语言代码
+  locales,
+  // 用于未匹配任何语言时
+  defaultLocale: 'en',
+  // 强制总是显示语言前缀
+  localePrefix: 'always'
+});
 
-  // 从Accept-Language头获取浏览器首选语言
-  const acceptLanguage = request.headers.get('Accept-Language') || '';
+export default function(request: NextRequest) {
+  // 获取当前路径
+  const pathname = request.nextUrl.pathname;
   
-  // 检测是否为中文，如果是则重定向到/zh，否则重定向到/en
-  const preferredLocale = acceptLanguage.startsWith('zh') ? 'zh' : DEFAULT_LOCALE;
+  // 调用next-intl的中间件处理路由和重定向
+  const response = middleware(request);
   
-  // 构建重定向URL，保留原始路径部分
-  const redirectUrl = new URL(`/${preferredLocale}${pathname}`, request.url);
+  // 为元数据处理添加当前路径到headers
+  response.headers.set('x-pathname', pathname);
   
-  // 返回重定向响应
-  return NextResponse.redirect(redirectUrl);
+  return response;
 }
 
-// 匹配除静态文件和API路由外的所有路径
+// 仅在特定路径上运行中间件
 export const config = {
-  matcher: ['/((?!api|_next|_vercel|.*\\.).*)']
+  matcher: ['/((?!api|_next|.*\\..*).*)']
 }; 
