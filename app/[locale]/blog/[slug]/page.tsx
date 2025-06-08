@@ -1,94 +1,91 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
 import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
-import type { NotionPage } from '@/lib/notion-types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
 import BlogLocaleSwitcher from '@/components/BlogLocaleSwitcher';
-import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+
+export const dynamicParams = true;
+
+// 类型定义
+interface PageProps {
+  params: {
+    slug: string;
+    locale: string;
+  };
+}
 
 // 默认封面图片配置
-const DEFAULT_COVER_GRADIENT = 'linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)';
 const DEFAULT_EMOJI = '📝';
 
 // 格式化日期的辅助函数，确保服务端和客户端渲染一致
 function formatDate(dateString: string | undefined, locale: string) {
   if (!dateString) return '';
   try {
-    // 使用固定的时间字符串格式而不是依赖 locale
     const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return locale === 'zh' ? `${year}年${month}月${day}日` : `${year}-${month}-${day}`;
+    
+    if (locale === 'zh') {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}年${month}月${day}日`;
+    } else {
+      // 英文日期格式
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
   } catch (error) {
     console.error('日期格式化错误:', error);
     return dateString;
   }
 }
 
-// 页面组件
-export default function Page({ params }: { params: { slug: string } }) {
-  const t = useTranslations('Blog');
-  const routeParams = useParams();
-  const locale = (routeParams.locale as string) || 'en';
+// 生成动态元数据
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const { slug, locale } = props.params;
+  const t = await getTranslations({ locale, namespace: 'Blog' });
+  const page = await getPost(slug);
   
-  // 客户端状态管理
-  const [page, setPage] = useState<NotionPage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  
-  useEffect(() => {
-    async function fetchPost() {
-      try {
-        setLoading(true);
-        const post = await getPost(params.slug);
-        if (!post) {
-          setError(true);
-          return;
-        }
-        setPage(post);
-      } catch (err) {
-        console.error("Error fetching post:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchPost();
-  }, [params.slug]);
-  
-  // 处理文章不存在的情况
-  if (error || (page === null && !loading)) {
-    return (
-      <div className="max-w-3xl mx-auto py-20 text-center">
-        <h1 className="text-3xl font-bold mb-4">{t('notFound.title')}</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">{t('notFound.description')}</p>
-        <a href={`/${locale}/blog`} className="text-blue-600 hover:underline dark:text-blue-400">
-          &larr; {t('backToBlog')}
-        </a>
-      </div>
-    );
+  if (!page) {
+    return {
+      title: t('notFound.title'),
+      description: t('notFound.description')
+    };
   }
   
-  // 加载状态
-  if (loading || !page) {
-    return (
-      <div className="max-w-3xl mx-auto py-20 text-center">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto mb-8"></div>
-          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-        </div>
-      </div>
-    );
+  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
+  const summary = page.properties.Summary?.rich_text?.map(text => text.plain_text).join('') || '';
+  
+  return {
+    title,
+    description: summary,
+    openGraph: {
+      title,
+      description: summary,
+      type: 'article',
+      publishedTime: page.properties.Date?.date?.start,
+      authors: ['Velan'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: summary,
+    }
+  };
+}
+
+// 页面组件
+export default async function Page(props: PageProps) {
+  const { slug, locale } = props.params;
+  const t = await getTranslations({ locale, namespace: 'Blog' });
+  const page = await getPost(slug);
+  
+  // 如果找不到页面，返回404
+  if (!page) {
+    return notFound();
   }
 
   // 获取Summary内容，用于显示在文章开头
@@ -134,8 +131,8 @@ export default function Page({ params }: { params: { slug: string } }) {
 
         {/* 引言 */}
         {summaryText && (
-          <div className="mt-4 text-xl text-gray-600 italic border-l-4 border-gray-300 pl-4 py-2 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 rounded">
-            {summaryText || t('post.summaryNote')}
+          <div className="text-lg text-gray-600 dark:text-gray-400 italic text-center border-l-4 border-gray-200 dark:border-gray-700 pl-4 bg-gradient-to-r from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 rounded mb-8">
+            <span className="font-semibold">{t('post.summaryNote')}:</span> {summaryText}
           </div>
         )}
       </header>
@@ -145,8 +142,16 @@ export default function Page({ params }: { params: { slug: string } }) {
         {page.blocks && page.blocks.length > 0 ? (
           <NotionRenderer blocks={page.blocks} />
         ) : (
-          <div>{summaryText || t('post.emptyContent')}</div>
+          <div className="text-center py-10 text-gray-500">
+            {t('post.emptyContent')}
+          </div>
         )}
+      </div>
+      
+      <div className="mt-10 text-center">
+        <a href={`/${locale}/blog`} className="text-blue-600 hover:underline dark:text-blue-400">
+          {t('backToBlog')}
+        </a>
       </div>
     </article>
   );

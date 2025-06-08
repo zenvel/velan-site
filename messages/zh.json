@@ -130,5 +130,19 @@
     "message": "页面不存在或已被移除。",
     "backHome": "返回首页",
     "tryAgain": "重试"
+  },
+  "Metadata": {
+    "home": {
+      "title": "Velan - 构建系统，锻造清晰",
+      "description": "独立系统构建者，记录设计有意图的数字产品与工作流的旅程。"
+    },
+    "blog": {
+      "title": "博客 - Velan",
+      "description": "关于系统思考、产品设计和独立创业的思考与实践。"
+    },
+    "about": {
+      "title": "关于 - Velan",
+      "description": "了解Velan的理念、使命，以及这个一人工作室背后的故事。"
+    }
   }
 } 

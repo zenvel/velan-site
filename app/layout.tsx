@@ -1,8 +1,8 @@
 import ClientLayout from './layout-client';
-import { metadata, viewport } from './metadata';
+import { viewport } from './metadata';
 import "./globals.css";
 
-export { metadata, viewport };
+export { viewport };
 
 export default function RootLayout({
   children,

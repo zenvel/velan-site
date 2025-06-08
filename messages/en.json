@@ -130,5 +130,19 @@
     "message": "Oops! Page not found.",
     "backHome": "Back to homepage",
     "tryAgain": "Try Again"
+  },
+  "Metadata": {
+    "home": {
+      "title": "Velan - Build Systems, Craft Clarity",
+      "description": "Solo system builder documenting the journey of designing intentional digital products and workflows."
+    },
+    "blog": {
+      "title": "Blog - Velan",
+      "description": "Thoughts on systems thinking, product design, and solo entrepreneurship."
+    },
+    "about": {
+      "title": "About - Velan",
+      "description": "Learn about Velan's philosophy, mission, and the story behind the one-person studio."
+    }
   }
 } 
