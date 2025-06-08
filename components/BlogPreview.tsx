@@ -63,10 +63,10 @@ export default function BlogPreview() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-24">
       <div className="mb-12 flex items-baseline justify-between">
-        <h2 className="text-3xl font-bold">{t('latestPosts')}</h2>
+        <h2 className="text-3xl font-bold">{t('latest.title')}</h2>
         <Button asChild variant="link" className="gap-1">
           <Link href={`/${locale}/blog`} className="flex items-center text-blue-600 dark:text-blue-400">
-            {t('viewAllPosts')} <ArrowRight className="h-4 w-4" />
+            {t('latest.viewAll')} <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
       </div>
@@ -84,6 +84,32 @@ export default function BlogPreview() {
             const tags = post.properties?.Tags?.multi_select || [];
             const summary = post.properties?.Summary?.rich_text?.map(t => t.plain_text).join('') || '';
             const coverUrl = post.cover?.file?.url || post.cover?.external?.url;
+            
+            // 如果没有真实文章数据，使用示例帖子
+            if (!title || title === 'Untitled') {
+              return (
+                <Link key={post.id || 'sample'} href="#">
+                  <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
+                    <div className="aspect-video overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)" }}>
+                      <div className="flex h-full w-full items-center justify-center text-white">
+                        <div className="text-center">
+                          <div className="text-5xl mb-3">📝</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="mb-2 text-xl font-bold">{t('latest.samplePost.title')}</h3>
+                      <p className="mb-4 text-gray-600 dark:text-gray-400 line-clamp-2">
+                        {t('latest.samplePost.summary')}
+                      </p>
+                      <time className="text-sm text-gray-500 dark:text-gray-500">
+                        {new Date().toISOString().split('T')[0]}
+                      </time>
+                    </div>
+                  </article>
+                </Link>
+              );
+            }
             
             // 为每篇文章选择一个渐变色
             const gradients = [
@@ -139,9 +165,21 @@ export default function BlogPreview() {
             );
           })
         ) : (
-          // 没有文章时显示提示
-          <div className="col-span-3 text-center py-12 text-gray-500">
-            {noPostsText}
+          // 没有文章时显示示例文章
+          <div className="col-span-3 md:col-span-1">
+            <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
+              <div className="aspect-video overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)" }}>
+                <div className="flex h-full w-full items-center justify-center text-white">
+                  <div className="text-center">
+                    <div className="text-5xl mb-3">📝</div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="mt-2 text-lg font-semibold">{t('latest.samplePost.title')}</h3>
+                <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-400">{t('latest.samplePost.summary')}</p>
+              </div>
+            </article>
           </div>
         )}
       </div>

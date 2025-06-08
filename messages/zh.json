@@ -32,8 +32,14 @@
         }
       }
     },
-    "latestPosts": "最新文章",
-    "viewAllPosts": "查看全部"
+    "latest": {
+      "title": "最新文章",
+      "viewAll": "查看全部",
+      "samplePost": {
+        "title": "我为什么选择一人公司",
+        "summary": "脱离公司体制不是逃避，而是进入更紧凑的个人操作系统。这背后的哲学与策略在这里展开......"
+      }
+    }
   },
   "blog": {
     "title": "博客",
