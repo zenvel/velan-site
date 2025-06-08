@@ -138,9 +138,9 @@ export default function Home() {
           </svg>
         </div>
 
-        <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Join the Velan Letter</h2>
+        <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">{t('newsletter.title')}</h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg sm:text-xl text-white/90">
-          A monthly dispatch on system building, solo strategy, and clarity-first design.
+          {t('newsletter.description')}
         </p>
 
         <form
@@ -153,11 +153,11 @@ export default function Home() {
             type="email"
             name="email"
             required
-            placeholder="Enter your email"
+            placeholder={t('newsletter.placeholder')}
             className="w-full rounded-md px-4 py-3 text-black placeholder-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-white/60"
           />
           <Button type="submit" size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100">
-            Subscribe
+            {t('newsletter.subscribe')}
           </Button>
         </form>
       </section>

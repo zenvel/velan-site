@@ -39,6 +39,12 @@
         "title": "Why I Choose a One-Person Company",
         "summary": "Leaving corporate structures isn't an escape; it's stepping into a tighter personal operating system. Here's the philosophy and tactics behind that move…"
       }
+    },
+    "newsletter": {
+      "title": "Join the Velan Letter",
+      "description": "One concise email each month on building systems & living deliberately.",
+      "placeholder": "your@email.com",
+      "subscribe": "Subscribe"
     }
   },
   "blog": {
