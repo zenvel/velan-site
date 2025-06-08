@@ -10,7 +10,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" className="tongyi-design-pc">
+    <html lang="zh-CN" className="tongyi-design-pc" suppressHydrationWarning>
       <ClientLayout>{children}</ClientLayout>
     </html>
   );

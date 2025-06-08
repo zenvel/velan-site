@@ -23,7 +23,12 @@ const DEFAULT_EMOJI = '📝';
 function formatDate(dateString: string | undefined) {
   if (!dateString) return '';
   try {
-    return format(new Date(dateString), 'yyyy年MM月dd日', { locale: zhCN });
+    // 使用固定的时间字符串格式而不是依赖 locale
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}年${month}月${day}日`;
   } catch (error) {
     console.error('日期格式化错误:', error);
     return dateString;
@@ -88,68 +93,45 @@ export default async function Page(props: PageProps) {
   const formattedDate = formatDate(date);
 
   return (
-    <article className="prose prose-lg max-w-3xl mx-auto py-10 px-4">
-      <header className="mb-8">
-        {/* 显示封面图片或默认占位图 */}
-        <div className="mb-6 -mx-4 sm:-mx-6 md:-mx-8 overflow-hidden rounded-lg">
+    <article className="max-w-3xl mx-auto rounded-2xl bg-white dark:bg-gray-900 px-6 py-10 shadow-sm">
+      <header>
+        {/* 封面区域 */}
+        <div className="mb-8 overflow-hidden rounded-xl">
           {coverUrl ? (
-            <img 
-              src={coverUrl} 
-              alt={title} 
-              className="w-full h-[40vh] object-cover"
-            />
+            <img src={coverUrl} alt={title} className="w-full h-[300px] object-cover" />
           ) : (
-            <div 
-              className="w-full h-[40vh] flex items-center justify-center"
-              style={{ background: DEFAULT_COVER_GRADIENT }}
-            >
-              <div className="text-center text-white">
-                <div className="text-7xl mb-4">{DEFAULT_EMOJI}</div>
-                <div className="text-xl font-medium">{title}</div>
+            <div className="w-full h-[300px] flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-400 text-white">
+              <div className="text-center">
+                <div className="text-6xl mb-2">{DEFAULT_EMOJI}</div>
+                <div className="text-xl font-semibold">{title}</div>
               </div>
             </div>
           )}
         </div>
-        
-        <h1 className="text-3xl font-bold mb-4">{title}</h1>
-        
-        <div className="flex flex-wrap gap-4 items-center mb-4">
-          {date && (
-            <time dateTime={date} className="text-gray-500 text-sm">
-              {formattedDate}
-            </time>
-          )}
-          
-          {/* 显示Tags */}
-          {page.properties.Tags?.multi_select && page.properties.Tags.multi_select.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {page.properties.Tags.multi_select.map((tag) => (
-                <span 
-                  key={tag.id} 
-                  className="px-3 py-1 text-sm rounded-full"
-                  style={{ 
-                    backgroundColor: tag.color === 'green' ? '#E6F6EC' : 
-                                    tag.color === 'brown' ? '#F9E8D9' : '#F0F0F0',
-                    color: tag.color === 'green' ? '#0E6245' : 
-                          tag.color === 'brown' ? '#8D4A00' : '#333333'
-                  }}
-                >
-                  {tag.name}
-                </span>
-              ))}
-            </div>
-          )}
+
+        {/* 标题 */}
+        <h1 className="text-4xl font-extrabold leading-tight tracking-tight mb-6 text-center">{title}</h1>
+
+        {/* 时间和标签 */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6 text-sm text-gray-500">
+          {date && <time dateTime={date} suppressHydrationWarning>{formattedDate}</time>}
+          {page.properties.Tags?.multi_select?.map(tag => (
+            <span key={tag.id} className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs">
+              {tag.name}
+            </span>
+          ))}
         </div>
-        
-        {/* 显示Summary作为文章引言 */}
+
+        {/* 引言 */}
         {summaryText && (
-          <div className="mt-4 text-xl text-gray-600 italic border-l-4 border-gray-300 pl-4 py-2 bg-gray-50 rounded">
+          <div className="text-lg text-gray-600 dark:text-gray-400 italic text-center border-l-4 border-gray-200 dark:border-gray-700 pl-4 bg-gradient-to-r from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 rounded mb-8">
             {summaryText}
           </div>
         )}
       </header>
-      
-      <div className="markdown-content">
+
+      {/* 正文 */}
+      <div className="markdown-content prose prose-lg dark:prose-invert">
         {page.blocks && page.blocks.length > 0 ? (
           <NotionRenderer blocks={page.blocks} />
         ) : (

@@ -29,7 +29,12 @@ export const metadata: Metadata = {
 function formatDate(dateString: string | undefined) {
   if (!dateString) return '';
   try {
-    return format(new Date(dateString), 'yyyy年MM月dd日', { locale: zhCN });
+    // 使用固定的时间字符串格式而不是依赖 locale
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}年${month}月${day}日`;
   } catch (error) {
     console.error('日期格式化错误:', error);
     return dateString;
@@ -89,7 +94,7 @@ export default async function BlogList() {
                         <div className="p-6 space-y-3">
                           {/* 时间 + 标签 */}
                           <div className="flex flex-wrap justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                            <time>{formattedDate}</time>
+                            <time suppressHydrationWarning>{formattedDate}</time>
                             <div className="flex gap-2">
                               {tags.map((tag) => (
                                 <span
