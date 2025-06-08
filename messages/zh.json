@@ -48,6 +48,11 @@
     }
   },
   "Blog": {
+    "pageTitle": "博客文章",
+    "empty": {
+      "title": "暂无文章",
+      "description": "请稍后再来查看"
+    },
     "notFound": {
       "title": "文章不存在",
       "description": "请检查URL或返回博客首页。"
@@ -56,6 +61,7 @@
       "summaryNote": "文章引言",
       "emptyContent": "内容尚未添加，请稍后查看。"
     },
+    "readMore": "阅读全文",
     "backToBlog": "返回博客"
   },
   "blog": {

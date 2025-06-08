@@ -48,6 +48,11 @@
     }
   },
   "Blog": {
+    "pageTitle": "Blog Posts",
+    "empty": {
+      "title": "No posts found",
+      "description": "Check back later for new content"
+    },
     "notFound": {
       "title": "Post not found",
       "description": "Please check the URL or return to the blog homepage."
@@ -56,6 +61,7 @@
       "summaryNote": "Summary",
       "emptyContent": "No content yet. Please check back later."
     },
+    "readMore": "Read more",
     "backToBlog": "Back to Blog"
   },
   "blog": {
