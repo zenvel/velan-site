@@ -47,6 +47,17 @@
       "subscribe": "订阅"
     }
   },
+  "Blog": {
+    "notFound": {
+      "title": "文章不存在",
+      "description": "请检查URL或返回博客首页。"
+    },
+    "post": {
+      "summaryNote": "文章引言",
+      "emptyContent": "内容尚未添加，请稍后查看。"
+    },
+    "backToBlog": "返回博客"
+  },
   "blog": {
     "title": "博客",
     "subtitle": "分享关于系统思考、产品设计和独立创业的思考"

@@ -47,6 +47,17 @@
       "subscribe": "Subscribe"
     }
   },
+  "Blog": {
+    "notFound": {
+      "title": "Post not found",
+      "description": "Please check the URL or return to the blog homepage."
+    },
+    "post": {
+      "summaryNote": "Summary",
+      "emptyContent": "No content yet. Please check back later."
+    },
+    "backToBlog": "Back to Blog"
+  },
   "blog": {
     "title": "Blog",
     "subtitle": "Thoughts on systems thinking, product design, and solo entrepreneurship"
