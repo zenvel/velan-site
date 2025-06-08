@@ -2,14 +2,40 @@ import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
 import type { NotionPage } from '@/lib/notion-types';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 
-type PageParams = {
-  slug: string;
+export const dynamicParams = true;
+
+// 直接使用字符串类型，避免解构
+type PageProps = {
+  params: {
+    slug: string;
+  };
 };
 
+// 默认封面图片配置
+const DEFAULT_COVER_GRADIENT = 'linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)';
+const DEFAULT_EMOJI = '📝';
+
+// 格式化日期的辅助函数，确保服务端和客户端渲染一致
+function formatDate(dateString: string | undefined) {
+  if (!dateString) return '';
+  try {
+    return format(new Date(dateString), 'yyyy年MM月dd日', { locale: zhCN });
+  } catch (error) {
+    console.error('日期格式化错误:', error);
+    return dateString;
+  }
+}
+
 // 生成动态元数据
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
-  const page = await getPost(params.slug);
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  // 使用await Promise.all来处理所有异步操作
+  const [params] = await Promise.all([props.params]);
+  const slug = params.slug;
+  const page = await getPost(slug);
   
   if (!page) {
     return {
@@ -39,38 +65,58 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
-// 直接使用参数并显式指定类型
-export default async function Post(props: { params: PageParams }) {
-  const { params } = props;
-  const page: NotionPage | null = await getPost(params.slug);
+// 使用官方推荐的方式处理动态路由参数
+export default async function Page(props: PageProps) {
+  // 使用await Promise.all来处理所有异步操作
+  const [params] = await Promise.all([props.params]);
+  const slug = params.slug;
+  const page = await getPost(slug);
   
+  // 如果找不到页面，返回404
   if (!page) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <h1 className="text-2xl font-bold mb-4">文章不存在</h1>
-        <p className="text-gray-500">
-          请检查您的Notion API配置或确认此文章是否发布
-        </p>
-      </div>
-    );
+    return notFound();
   }
 
   // 获取Summary内容，用于显示在文章开头
   const summaryText = page.properties.Summary?.rich_text?.map((text) => text.plain_text).join('') || '';
+  // 获取封面图片URL
+  const coverUrl = page.cover?.file?.url || page.cover?.external?.url;
+  // 获取标题
+  const title = page.properties.Title?.title?.[0]?.plain_text || 'Untitled';
+  // 格式化日期
+  const date = page.properties.Date?.date?.start;
+  const formattedDate = formatDate(date);
 
   return (
     <article className="prose prose-lg max-w-3xl mx-auto py-10 px-4">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">{page.properties.Title?.title?.[0]?.plain_text || 'Untitled'}</h1>
+        {/* 显示封面图片或默认占位图 */}
+        <div className="mb-6 -mx-4 sm:-mx-6 md:-mx-8 overflow-hidden rounded-lg">
+          {coverUrl ? (
+            <img 
+              src={coverUrl} 
+              alt={title} 
+              className="w-full h-[40vh] object-cover"
+            />
+          ) : (
+            <div 
+              className="w-full h-[40vh] flex items-center justify-center"
+              style={{ background: DEFAULT_COVER_GRADIENT }}
+            >
+              <div className="text-center text-white">
+                <div className="text-7xl mb-4">{DEFAULT_EMOJI}</div>
+                <div className="text-xl font-medium">{title}</div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <h1 className="text-3xl font-bold mb-4">{title}</h1>
         
         <div className="flex flex-wrap gap-4 items-center mb-4">
-          {page.properties.Date?.date?.start && (
-            <time dateTime={page.properties.Date.date.start} className="text-gray-500 text-sm">
-              {new Date(page.properties.Date.date.start).toLocaleDateString('zh-CN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+          {date && (
+            <time dateTime={date} className="text-gray-500 text-sm">
+              {formattedDate}
             </time>
           )}
           

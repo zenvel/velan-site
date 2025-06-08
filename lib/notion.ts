@@ -37,7 +37,30 @@ export async function getPosts(): Promise<NotionPage[]> {
       }],
     });
 
-    return response.results as unknown as NotionPage[];
+    // 转换结果并添加封面
+    const pages = response.results.map((page) => {
+      const typedPage = page as unknown as NotionPage;
+      
+      // 尝试从 Cover 属性中获取封面
+      const coverProperty = typedPage.properties?.Cover as any;
+      if (coverProperty?.files && coverProperty.files.length > 0) {
+        const coverFile = coverProperty.files[0];
+        if (coverFile.file?.url) {
+          typedPage.cover = {
+            type: 'file',
+            file: { url: coverFile.file.url, expiry_time: '' }
+          };
+        } else if (coverFile.external?.url) {
+          typedPage.cover = {
+            type: 'external',
+            external: { url: coverFile.external.url }
+          };
+        }
+      }
+      return typedPage;
+    });
+
+    return pages;
   } catch (error) {
     console.error('获取Notion文章列表失败:', error);
     return [];

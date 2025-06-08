@@ -73,6 +73,16 @@ export interface NotionPage {
       type: 'checkbox';
       checkbox: boolean;
     };
+    Cover?: {
+      id: string;
+      type: 'files';
+      files: Array<{
+        name?: string;
+        type?: 'file' | 'external';
+        file?: { url: string; expiry_time: string };
+        external?: { url: string };
+      }>;
+    };
     [key: string]: unknown;
   };
   url: string;

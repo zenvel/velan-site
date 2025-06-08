@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import BlogPreview from '@/components/BlogPreview'
+import ParticleBg from '@/components/Particles'
 
 /**
  * Velan Home – high-standard landing page
@@ -16,11 +17,24 @@ import BlogPreview from '@/components/BlogPreview'
 export default function Home() {
   return (
     <main className="relative overflow-x-clip text-gray-900 dark:text-gray-100">
+      {/* extra blur background */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <svg className="absolute left-1/3 top-1/4 blur-3xl opacity-20"
+            width="800" height="800">
+          <defs>
+            <radialGradient id="grad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#a855f7" />
+              <stop offset="100%" stopColor="#60a5fa" />
+            </radialGradient>
+          </defs>
+          <circle cx="400" cy="400" r="350" fill="url(#grad)" />
+        </svg>
+      </div>
       {/* background radial gradient */}
       <div className="pointer-events-none absolute inset-0 -z-10 flex justify-center">
         <div className="h-[600px] w-[600px] rounded-full bg-blue-500/30 blur-3xl dark:bg-blue-400/20" />
       </div>
-
+      <ParticleBg />
       {/* Hero Section */}
       <section className="mx-auto max-w-5xl px-6 pt-32 pb-24 text-center">
         <motion.h1
@@ -32,7 +46,7 @@ export default function Home() {
           Build <span className="text-blue-600 dark:text-blue-400">Systems</span>,<br />
           Craft <span className="text-blue-600 dark:text-blue-400">Clarity</span>
         </motion.h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 dark:text-gray-400 md:text-xl">
+        <p className="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
           I'm Velan—solo system builder documenting the journey of designing
           intentional digital products & workflows.
         </p>

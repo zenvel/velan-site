@@ -2,12 +2,7 @@
 
 import "./globals.css";
 import { useState, useEffect } from 'react';
-import { StagewiseToolbar } from '@stagewise/toolbar-next';
-
-// Stagewise配置
-const stagewiseConfig = {
-  plugins: []
-};
+import StagewiseProvider from '@/components/StagewiseProvider';
 
 export default function ClientLayout({
   children,
@@ -15,23 +10,20 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   const [isMounted, setIsMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   
   useEffect(() => {
     setIsMounted(true);
+    // 在客户端检查是否为开发环境
+    setIsDev(process.env.NODE_ENV === 'development');
   }, []);
 
   return (
-    <html lang="zh-CN" className="tongyi-design-pc">
-      <body
-        className="antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans"
-      >
-        <main className="min-h-screen">
-          {children}
-        </main>
-        {isMounted && process.env.NODE_ENV === 'development' && (
-          <StagewiseToolbar config={stagewiseConfig} />
-        )}
-      </body>
-    </html>
+    <body className="antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+      <main className="min-h-screen">
+        {children}
+      </main>
+      {isMounted && isDev && <StagewiseProvider />}
+    </body>
   );
 } 

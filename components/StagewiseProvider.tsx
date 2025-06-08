@@ -18,10 +18,12 @@ const stagewiseConfig = {
 
 export default function StagewiseProvider() {
   const [isMounted, setIsMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('initializing');
   
   useEffect(() => {
     setIsMounted(true);
+    setIsDev(process.env.NODE_ENV === 'development');
     
     // 连接状态变化处理函数
     const handleConnectionChange = (event: any) => {
@@ -38,11 +40,8 @@ export default function StagewiseProvider() {
     };
   }, []);
   
-  // 仅在客户端渲染后显示
-  if (!isMounted) return null;
-  
-  // 确保只在开发环境中渲染
-  if (process.env.NODE_ENV !== 'development') return null;
+  // 仅在客户端渲染后显示且是开发环境
+  if (!isMounted || !isDev) return null;
   
   return (
     <div id="stagewise-container">

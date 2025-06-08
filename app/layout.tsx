@@ -1,5 +1,6 @@
 import ClientLayout from './layout-client';
 import { metadata, viewport } from './metadata';
+import "./globals.css";
 
 export { metadata, viewport };
 
@@ -8,5 +9,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <ClientLayout>{children}</ClientLayout>;
+  return (
+    <html lang="zh-CN" className="tongyi-design-pc">
+      <ClientLayout>{children}</ClientLayout>
+    </html>
+  );
 }
