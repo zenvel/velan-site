@@ -13,7 +13,14 @@ export default function ParticleBg() {
           move: { enable: true, speed: 0.3 }
         }
       }}
-      className="absolute inset-0 -z-10"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      style={{
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        filter: 'blur(1px)',
+        opacity: 0.7
+      }}
     />
   );
 }
