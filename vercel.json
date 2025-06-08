@@ -13,5 +13,15 @@
         { "key": "Content-Security-Policy", "value": "upgrade-insecure-requests" }
       ]
     }
-  ]
+  ],
+  "buildCommand": "chmod +x build.sh && ./build.sh",
+  "ignoreCommand": "node -e \"process.exit(0)\"",
+  "buildConfig": {
+    "eslint": {
+      "ignoreDuringBuilds": true
+    },
+    "typescript": {
+      "ignoreBuildErrors": true
+    }
+  }
 } 

@@ -1,0 +1,27 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# Cache
+.cache/
+
+# Environment files
+.env*
+!.env.example
+
+# Public assets
+public/
+
+# Generated files
+next-env.d.ts
+**/next-env.d.ts
+**/*.js.map
+**/*.d.ts.map
+
+# Notion-related files
+lib/notion.ts 

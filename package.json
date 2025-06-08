@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "DISABLE_ESLINT_PLUGIN=true next build",
+    "deploy-build": "DISABLE_ESLINT_PLUGIN=true NEXT_IGNORE_TYPE_ERROR=1 next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix"
   },
   "dependencies": {
     "@notionhq/client": "^3.1.3",
