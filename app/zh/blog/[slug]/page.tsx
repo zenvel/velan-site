@@ -2,6 +2,7 @@ import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import BlogLocaleSwitcher from '@/components/BlogLocaleSwitcher';
 
 export const dynamicParams = true;
 
@@ -90,6 +91,7 @@ export default async function Page(props: PageProps) {
 
   return (
     <article className="max-w-3xl mx-auto rounded-2xl bg-white dark:bg-gray-900 px-6 py-10 shadow-sm">
+      <BlogLocaleSwitcher />
       <header>
         {/* 封面区域 */}
         <div className="mb-8 overflow-hidden rounded-xl">

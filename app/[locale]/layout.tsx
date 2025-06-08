@@ -2,6 +2,10 @@ import '../globals.css';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import Provider from './provider';
+import dynamic from 'next/dynamic';
+
+// 动态导入客户端布局组件
+const ClientLayout = dynamic(() => import('../layout-client'), { ssr: true });
 
 // 支持的语言列表
 const LOCALES = ['en', 'zh'] as const;
@@ -51,12 +55,10 @@ export default async function LocaleLayout({
   }
   
   return (
-    <html suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <Provider locale={locale}>
-          {children}
-        </Provider>
-      </body>
-    </html>
+    <Provider locale={locale}>
+      <ClientLayout>
+        {children}
+      </ClientLayout>
+    </Provider>
   );
 } 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { StagewiseToolbar } from '@stagewise/toolbar-next';
 
 // Stagewise配置
@@ -16,14 +16,28 @@ const stagewiseConfig = {
   }
 };
 
+// 创建唯一标识符，确保只渲染一次
+const STAGEWISE_ID = 'stagewise-singleton-' + Math.random().toString(36).substring(2, 9);
+
 export default function StagewiseProvider() {
   const [isMounted, setIsMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('initializing');
+  const isInitializedRef = useRef(false);
   
   useEffect(() => {
+    // 防止多次初始化
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+    
     setIsMounted(true);
     setIsDev(process.env.NODE_ENV === 'development');
+    
+    // 检查是否已经存在stagewise container
+    if (document.getElementById('stagewise-container')) {
+      console.warn('StagewiseProvider container already exists. Skipping initialization.');
+      return;
+    }
     
     // 连接状态变化处理函数
     const handleConnectionChange = (event: any) => {
@@ -37,6 +51,7 @@ export default function StagewiseProvider() {
     // 清理函数，确保在组件卸载时关闭连接
     return () => {
       window.removeEventListener('stagewise:connection-change', handleConnectionChange);
+      isInitializedRef.current = false;
     };
   }, []);
   
@@ -44,8 +59,8 @@ export default function StagewiseProvider() {
   if (!isMounted || !isDev) return null;
   
   return (
-    <div id="stagewise-container">
-      <StagewiseToolbar config={stagewiseConfig} />
+    <div id="stagewise-container" key={STAGEWISE_ID} data-singleton="true">
+      <StagewiseToolbar config={stagewiseConfig} key={STAGEWISE_ID} />
       {connectionStatus !== 'connected' && (
         <div style={{
           position: 'fixed',

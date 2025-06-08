@@ -11,7 +11,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" className="tongyi-design-pc" suppressHydrationWarning>
-      <ClientLayout>{children}</ClientLayout>
+      <body suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
