@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Compass, Blocks, Globe, ExternalLink } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
+import Footer from '@/components/Footer';
 
 export default function About() {
   const t = useTranslations('About');
@@ -133,9 +134,7 @@ export default function About() {
       </section>
 
       {/* FOOTER */}
-      <footer className="mx-auto mt-24 max-w-4xl px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} Velan • {t('footer')}
-      </footer>
+      <Footer />
     </main>
   );
 } 

@@ -120,5 +120,10 @@
   },
   "footer": {
     "slogan": "清晰系统，有意之作"
+  },
+  "Footer": {
+    "slogan": "清晰系统，有意之作",
+    "builtWith": "基于 Next.js 与 Notion 构建",
+    "about": "关于我"
   }
 } 

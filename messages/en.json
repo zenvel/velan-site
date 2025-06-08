@@ -120,5 +120,10 @@
   },
   "footer": {
     "slogan": "Clear systems, intentional craft"
+  },
+  "Footer": {
+    "slogan": "Clear systems, intentional craft",
+    "builtWith": "Built with Next.js & Notion",
+    "about": "About"
   }
 } 
