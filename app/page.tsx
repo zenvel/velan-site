@@ -60,21 +60,21 @@ export default function Home() {
       </div>
       
       {/* Hero Section */}
-      <section className="mx-auto max-w-5xl px-6 pt-32 pb-24 text-center">
+      <section className="mx-auto max-w-5xl px-6 pt-36 pb-32 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-5xl font-extrabold leading-tight md:text-6xl"
+          className="text-6xl md:text-7xl font-extrabold leading-tight tracking-tight"
         >
           Build <span className="text-blue-600 dark:text-blue-400">Systems</span>,<br />
           Craft <span className="text-blue-600 dark:text-blue-400">Clarity</span>
         </motion.h1>
-        <p className="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
+        <p className="mx-auto mt-10 max-w-[60ch] text-2xl leading-relaxed text-gray-500 dark:text-gray-400"        >
           I'm Velan—solo system builder documenting the journey of designing
           intentional digital products & workflows.
         </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
+        <div className="mt-14 flex flex-wrap justify-center gap-4">
           <Button asChild size="lg">
             <Link href="/en/blog" className="inline-flex items-center gap-2">
               Read the Blog <ArrowRight className="h-4 w-4" />
@@ -87,7 +87,7 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="mx-auto max-w-6xl px-6 pb-24">
+      <section className="mx-auto max-w-6xl px-6 pb-32">
         <h2 className="mb-8 text-center text-3xl font-bold">What You'll Find Here</h2>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
@@ -109,7 +109,7 @@ export default function Home() {
           ].map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60"
+              className="rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-gray-800/60"
             >
               <div className="mb-4 text-3xl">{f.icon}</div>
               <h3 className="mb-2 text-xl font-semibold">{f.title}</h3>
@@ -120,36 +120,9 @@ export default function Home() {
       </section>
 
       <BlogPreview />
-      <section className="mx-auto max-w-6xl px-6 pb-24">
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="text-3xl font-bold">Latest Posts</h2>
-          <Link href="/en/blog" className="text-blue-600 hover:underline dark:text-blue-400">
-            View all →
-          </Link>
-        </div>
-        {/* TODO: replace static cards with dynamic fetch */}
-        <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <article
-              key={i}
-              className="rounded-xl border border-gray-200 p-5 transition hover:shadow-lg dark:border-gray-700"
-            >
-              <time className="text-sm text-gray-500 dark:text-gray-400">June 8, 2025</time>
-              <h3 className="mt-2 text-lg font-semibold">
-                <Link href="#">Why I Choose a One-Person Company</Link>
-              </h3>
-              <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-400">
-                Leaving corporate structures isn't an escape; it's stepping into a
-                tighter personal operating system. Here's the philosophy and
-                tactics behind that move…
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
 
       {/* Newsletter CTA */}
-      <section className="mx-auto max-w-3xl rounded-2xl bg-blue-600 py-14 px-8 text-center text-white dark:bg-blue-500">
+      <section className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 py-14 px-8 text-center text-white dark:bg-blue-500">
         <h2 className="text-3xl font-bold">Join the Velan Letter</h2>
         <p className="mx-auto mt-3 max-w-md text-lg">
           One concise email each month on building systems & living deliberately.
