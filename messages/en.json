@@ -47,6 +47,50 @@
       "subscribe": "Subscribe"
     }
   },
+  "About": {
+    "title": "About Me",
+    "bio": "Hi, I'm Velan. A solo system builder creating intentional digital workflows and tools.",
+    "philosophyTitle": "My Philosophy",
+    "philosophyText": "I believe in clarity, autonomy, and building systems that scale meaningfully as one.",
+    "valuesTitle": "Mission · Vision · Values",
+    "mission": {
+      "title": "Mission",
+      "desc": "Design modular systems that empower individuals to build, think and live deliberately."
+    },
+    "vision": {
+      "title": "Vision",
+      "desc": "A world where one-person companies operate globally with clarity, calm and sustainable impact."
+    },
+    "values": {
+      "title": "Values",
+      "desc": "Clarity over noise · Systems over hacks · Craft over hustle · Open over closed."
+    },
+    "timelineTitle": "My Builder Timeline",
+    "timeline": {
+      "2010": {
+        "title": "First Line of Code",
+        "desc": "Built a hobby website in plain PHP while in college, fell in love with the web."
+      },
+      "2015": {
+        "title": "Product Lead @ SaaS Corp",
+        "desc": "Led a team of 12 engineers shipping data-platform features to 5 million users."
+      },
+      "2023": {
+        "title": "Launch Zenvel",
+        "desc": "Left corporate path, started building a solo system brand to explore calm productivity."
+      },
+      "2025": {
+        "title": "Open Source Velan OS",
+        "desc": "Released the first public blueprint of Zenvel OS for indie creators."
+      }
+    },
+    "cta": {
+      "title": "Build With Me",
+      "desc": "If you're crafting a purposeful product and need a system thinker to accelerate clarity, let's talk.",
+      "button": "Reach Out"
+    },
+    "footer": "Built with Next.js & Notion"
+  },
   "Blog": {
     "pageTitle": "Blog Posts",
     "empty": {
