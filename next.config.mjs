@@ -15,7 +15,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['localhost', 'res.cloudinary.com'],
+    domains: ['localhost', 'res.cloudinary.com', 'prod-files-secure.s3.us-west-2.amazonaws.com'],
   },
   // 允许跨源资源加载
   async headers() {
