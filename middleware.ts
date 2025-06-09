@@ -5,7 +5,7 @@ import createMiddleware from 'next-intl/middleware';
 const locales = ['en', 'zh'];
 
 // 创建国际化中间件
-const middleware = createMiddleware({
+const intlMiddleware = createMiddleware({
   // 必须匹配所有支持的语言代码
   locales,
   // 用于未匹配任何语言时
@@ -14,52 +14,27 @@ const middleware = createMiddleware({
   localePrefix: 'always'
 });
 
-export default function(request: NextRequest) {
-  // 获取当前路径
+export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  console.log('处理请求路径:', pathname);
   
-  // 如果访问根路径，检查Accept-Language头部，决定重定向到哪个语言
-  if (pathname === '/' || pathname === '') {
-    // 获取Accept-Language头部
-    const acceptLang = request.headers.get('Accept-Language') || '';
-    // 简单检测是否包含中文偏好
-    const preferChinese = acceptLang.includes('zh');
-    
-    // 根据语言偏好重定向
+  // 记录请求日志
+  console.log('Middleware处理路径:', pathname);
+  
+  // 如果是根路径，手动重定向到默认语言
+  if (pathname === '/') {
+    const acceptLanguage = request.headers.get('accept-language') || '';
+    const preferChinese = acceptLanguage.toLowerCase().includes('zh');
     const locale = preferChinese ? 'zh' : 'en';
-    console.log(`根路径重定向至: /${locale}`);
     
-    // 创建重定向URL
-    const url = new URL(`/${locale}`, request.url);
-    
-    // 返回重定向响应
-    return Response.redirect(url);
+    console.log('根路径重定向到:', `/${locale}`);
+    return Response.redirect(new URL(`/${locale}`, request.url));
   }
   
-  try {
-    // 调用next-intl的中间件处理路由和重定向
-    const response = middleware(request);
-    
-    // 为元数据处理添加当前路径到headers
-    response.headers.set('x-pathname', pathname);
-    
-    // 添加no-cache头部，防止浏览器缓存问题
-    response.headers.set('Cache-Control', 'no-store, must-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    
-    return response;
-  } catch (error) {
-    console.error('中间件处理错误:', error);
-    
-    // 出错时重定向到首页
-    const url = new URL(`/en`, request.url);
-    return Response.redirect(url);
-  }
+  // 其他路径使用 next-intl 中间件处理
+  return intlMiddleware(request);
 }
 
 // 仅在特定路径上运行中间件
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)']
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
 }; 
