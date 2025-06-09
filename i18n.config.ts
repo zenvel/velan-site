@@ -4,9 +4,12 @@ import { notFound } from 'next/navigation';
 
 export default getRequestConfig(async ({ locale }) => {
   // 确保语言代码有效
-  if (!locales.includes(locale as any)) {
-    console.error(`无效的语言代码: ${locale}`);
-    return notFound();
+  if (!locale) {
+    console.warn(`语言代码为空，使用默认语言: ${defaultLocale}`);
+    locale = defaultLocale;
+  } else if (!locales.includes(locale as any)) {
+    console.warn(`无效的语言代码: ${locale}，使用默认语言: ${defaultLocale}`);
+    locale = defaultLocale;
   }
   
   try {

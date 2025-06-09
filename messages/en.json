@@ -119,6 +119,9 @@
     "subtitle": "Thoughts on systems thinking, product design, and solo entrepreneurship",
     "readMore": "Read more"
   },
+  "BlogPost": {
+    "backToBlog": "Back to Blog"
+  },
   "footer": {
     "slogan": "Clear systems, intentional craft"
   },
@@ -145,5 +148,17 @@
       "title": "About - Velan",
       "description": "Learn about Velan's philosophy, mission, and the story behind the one-person studio."
     }
+  },
+  "error": {
+    "title": "Error Occurred",
+    "description": "Something went wrong. Please try again later.",
+    "action": "Return to Home"
+  },
+  "about": {
+    "title": "About Me",
+    "subtitle": "I'm Velan, a solo system builder.",
+    "paragraph1": "I focus on building digital products and workflows with clear intention and purpose, while documenting the entire process.",
+    "paragraph2": "I believe that systems thinking can simplify complex tasks and make the creation process more efficient and meaningful.",
+    "contact": "Contact Me"
   }
 } 

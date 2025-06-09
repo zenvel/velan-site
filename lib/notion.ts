@@ -464,13 +464,65 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
     
     if (!matchingLocale) {
       console.log(`❌ 没有找到匹配的${lang}文章: ${slug}`);
+      
+      // 先尝试找到任意语言的匹配slug
+      const anyLangMatch = localePages.results.find(page => {
+        try {
+          const pageSlug = safeGetProperty(page, "Slug", "rich_text");
+          return pageSlug === slug;
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      if (anyLangMatch) {
+        // 找到了其他语言的相同slug，获取Article_ID
+        const aid = (anyLangMatch as any).properties.Article_ID?.number;
+        
+        if (aid) {
+          console.log(`🔄 找到其他语言的相同slug文章，Article_ID=${aid}，尝试查找当前语言版本`);
+          
+          // 尝试找到当前语言的对应文章
+          const langMatch = localePages.results.find(page => {
+            try {
+              const pageArticleId = (page as any).properties.Article_ID?.number;
+              const pageLang = safeGetSelect(page, "Lang");
+              return pageArticleId === aid && pageLang === lang;
+            } catch (e) {
+              return false;
+            }
+          });
+          
+          if (langMatch) {
+            // 找到了对应语言的文章
+            const correctSlug = safeGetProperty(langMatch, "Slug", "rich_text");
+            console.log(`✅ 找到正确的${lang}版本，slug=${correctSlug}，应该跳转`);
+            
+            // 这里可以返回一个特殊标记，表示需要跳转
+            // 但我们不在这里处理跳转，而是返回对应文章的信息
+            return await processArticleLocale(langMatch);
+          }
+        }
+      }
+      
       return null;
     }
     
     console.log(`✅ 找到匹配的${lang}文章: ${slug}`);
-    
-    const L = matchingLocale;
+    return await processArticleLocale(matchingLocale);
+  } catch (error) {
+    console.error(`获取文章详情失败 (slug: ${slug}, lang: ${lang}):`, error);
+    return null;
+  }
+}
+
+// 提取文章处理逻辑为单独函数
+async function processArticleLocale(localeEntry: any): Promise<JoinedPost | null> {
+  try {
+    const L = localeEntry;
     const aid = (L as any).properties.Article_ID?.number;
+    const lang = safeGetSelect(L, "Lang");
+    
     if (!aid) {
       console.error(`找到的文章没有Article_ID: ${L.id}`);
       return null;
@@ -502,6 +554,7 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
 
     // 从 title 类型属性获取标题
     const title = getArticleTitleFromMapping(lang, aid);
+    const slug = safeGetProperty(L, "Slug", "rich_text");
 
     // 组装
     const coverFiles = (art as any).properties.Cover?.files || [];
@@ -525,7 +578,7 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
       blocks: blocks.results
     } as JoinedPost;
   } catch (error) {
-    console.error(`获取文章详情失败 (slug: ${slug}, lang: ${lang}):`, error);
+    console.error(`处理文章数据失败:`, error);
     return null;
   }
 }

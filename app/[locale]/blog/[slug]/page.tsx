@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
@@ -9,71 +9,125 @@ import LocalizedHead from '@/components/LocalizedHead';
 import { getPost } from '@/lib/notion';
 import NotionRenderer from '@/components/notion/NotionRenderer';
 import { getTranslations } from 'next-intl/server';
+import { unstable_noStore as noStore } from 'next/cache';
+import { defaultLocale } from '@/i18n';
 
-export default async function BlogPost({ params }: { params: { locale: string, slug: string } }) {
-  const { locale, slug } = params;
-  console.log(`获取文章详情，语言: ${locale}, slug: ${slug}`);
-  const t = await getTranslations('BlogPost');
+// 导入翻译文件，确保国际化正常工作
+import zhMessages from '@/messages/zh.json';
+import enMessages from '@/messages/en.json';
+
+// 强制使用动态渲染，防止静态生成缓存问题
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function BlogPost({ 
+  params 
+}: { 
+  params: { locale: string, slug: string } | Promise<{ locale: string, slug: string }>;
+}) {
+  // 强制禁用缓存
+  noStore();
+  
+  // 正确地等待参数解析
+  const resolvedParams = await Promise.resolve(params);
+  const locale = resolvedParams.locale || defaultLocale;
+  const slug = resolvedParams.slug;
+  
+  if (!slug) {
+    console.error('缺少文章slug参数');
+    notFound();
+  }
+  
+  // 直接使用翻译文件，确保国际化正常工作
+  const messages = locale === 'zh' ? zhMessages : enMessages;
+  const backToBlogText = messages.BlogPost.backToBlog;
   
   // 确保传递正确的语言参数
   const post = await getPost(slug, locale);
-  console.log(`获取到文章详情:`, post ? "成功" : "未找到");
   
   if (!post) notFound();
   
+  // 检查当前slug是否与文章的slug一致，如果不一致则重定向
+  if (post.slug !== slug) {
+    redirect(`/${locale}/blog/${post.slug}`);
+  }
+  
+  // 格式化日期的辅助函数
+  function formatDate(dateString: string | undefined) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (locale === 'zh') {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}年${month}月${day}日`;
+    }
+    return dateString;
+  }
+  
+  const formattedDate = formatDate(post.date);
+  
   return (
     <>
-      <LocalizedHead 
-        titleKey="blog.post.title" 
+      <LocalizedHead
+        titleKey="blog.post.title"
         descriptionKey="blog.post.description"
+        customTitle={post.title}
+        customDescription={post.summary}
       />
       
-      <main className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
-        {/* 返回按钮 */}
-        <div className="max-w-4xl mx-auto pt-8 px-6">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/${locale}/blog`} className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t('backToBlog')}
-            </Link>
-          </Button>
-        </div>
+      <main className="bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
         
-        {/* 博客文章头部 */}
-        <article className="max-w-4xl mx-auto px-6 py-12">
-          <header className="mb-12">
-            <div className="flex items-center gap-4 mb-4 text-sm">
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag: string, index: number) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full font-medium">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <time className="text-gray-500 dark:text-gray-400">
-                {post.date}
-              </time>
+        <article className="max-w-3xl mx-auto px-6 py-16">
+          {/* 返回按钮 */}
+          <div className="mb-12">
+            <Link href={`/${locale}/blog`} className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+              <ArrowLeft className="h-4 w-4" />
+              {backToBlogText}
+            </Link>
+          </div>
+            
+          {/* 封面图 */}
+          {post.coverUrl && (
+            <div className="relative mb-12 shadow-xl rounded-2xl overflow-hidden">
+              <img
+                src={post.coverUrl}
+                alt={post.title}
+                className="w-full object-cover aspect-video"
+              />
             </div>
-            
-            <h1 className="text-3xl md:text-4xl font-bold mb-6">{post.title}</h1>
-            
-            {post.coverUrl && (
-              <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden mb-8">
-                <Image
-                  src={post.coverUrl}
-                  alt={post.title}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  priority
-                />
+          )}
+          
+          {/* 标题 */}
+          <h1 className="text-3xl md:text-4xl font-semibold mb-6 text-center">{post.title}</h1>
+          
+          {/* 日期和标签 */}
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-10 text-sm">
+            <time className="text-gray-500 dark:text-gray-400" suppressHydrationWarning>
+              {formattedDate}
+            </time>
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {post.tags.map((tag, index) => (
+                  <span key={index} className="px-3 py-1 rounded-full font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    {tag}
+                  </span>
+                ))}
               </div>
             )}
-          </header>
+          </div>
+          
+          {/* 摘要 */}
+          {post.summary && (
+            <div className="my-12 text-center">
+              <p className="text-xl text-gray-600 dark:text-gray-400">
+                {post.summary}
+              </p>
+            </div>
+          )}
           
           {/* 博客内容 */}
-          <div className="prose dark:prose-invert prose-lg max-w-none">
+          <div className="prose dark:prose-invert prose-lg max-w-none prose-img:rounded-lg prose-headings:font-bold">
             <NotionRenderer blocks={post.blocks} />
           </div>
         </article>

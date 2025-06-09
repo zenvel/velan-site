@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation';
 
-export default function RootPage() {
-  // 获取浏览器语言偏好，优先重定向到中文或英文
-  // 这个组件不应该实际运行，因为中间件应该先处理重定向
-  // 但作为备份机制保留
-  const userLanguage = typeof navigator !== 'undefined' && navigator.language
-    ? navigator.language.toLowerCase().startsWith('zh')
-      ? 'zh'
-      : 'en'
-    : 'en';
+// 这个组件是根路径 `/` 的页面组件
+// 我们需要重定向到默认语言路径
+export default function Home() {
+  // 默认重定向到英文版首页
+  // 将此组件强制为客户端组件，以确保正确重定向
+  redirect('/en');
   
-  redirect(`/${userLanguage}`);
+  // 这个返回永远不会被执行，因为上面的重定向会阻止渲染
+  return null;
 }
