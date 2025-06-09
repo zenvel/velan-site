@@ -81,7 +81,7 @@ export default async function BlogList({ params:{ locale } }:{
                     {post.summary}
                   </p>
                   <div className="mt-4 text-blue-600 dark:text-blue-400 font-medium">
-                    {t('readMore')} →
+                    {t('readMore', { fallback: 'Read more' })} →
                   </div>
                 </div>
               </Link>

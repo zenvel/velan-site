@@ -116,7 +116,8 @@
   },
   "blog": {
     "title": "Blog",
-    "subtitle": "Thoughts on systems thinking, product design, and solo entrepreneurship"
+    "subtitle": "Thoughts on systems thinking, product design, and solo entrepreneurship",
+    "readMore": "Read more"
   },
   "footer": {
     "slogan": "Clear systems, intentional craft"
