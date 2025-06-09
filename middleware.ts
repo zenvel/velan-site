@@ -17,6 +17,7 @@ const middleware = createMiddleware({
 export default function(request: NextRequest) {
   // 获取当前路径
   const pathname = request.nextUrl.pathname;
+  console.log('处理请求路径:', pathname);
   
   // 如果访问根路径，检查Accept-Language头部，决定重定向到哪个语言
   if (pathname === '/' || pathname === '') {
@@ -27,6 +28,7 @@ export default function(request: NextRequest) {
     
     // 根据语言偏好重定向
     const locale = preferChinese ? 'zh' : 'en';
+    console.log(`根路径重定向至: /${locale}`);
     
     // 创建重定向URL
     const url = new URL(`/${locale}`, request.url);
@@ -35,18 +37,26 @@ export default function(request: NextRequest) {
     return Response.redirect(url);
   }
   
-  // 调用next-intl的中间件处理路由和重定向
-  const response = middleware(request);
-  
-  // 为元数据处理添加当前路径到headers
-  response.headers.set('x-pathname', pathname);
-  
-  // 添加no-cache头部，防止浏览器缓存问题
-  response.headers.set('Cache-Control', 'no-store, must-revalidate');
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-  
-  return response;
+  try {
+    // 调用next-intl的中间件处理路由和重定向
+    const response = middleware(request);
+    
+    // 为元数据处理添加当前路径到headers
+    response.headers.set('x-pathname', pathname);
+    
+    // 添加no-cache头部，防止浏览器缓存问题
+    response.headers.set('Cache-Control', 'no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
+  } catch (error) {
+    console.error('中间件处理错误:', error);
+    
+    // 出错时重定向到首页
+    const url = new URL(`/en`, request.url);
+    return Response.redirect(url);
+  }
 }
 
 // 仅在特定路径上运行中间件
