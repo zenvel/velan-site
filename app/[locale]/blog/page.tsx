@@ -14,7 +14,7 @@ export default async function BlogList({ params:{ locale } }:{
   params:{ locale:string }
 }){
   console.log("开始获取博客文章，语言:", locale);
-  const t = await getTranslations('Blog');
+  const t = await getTranslations('blog');
   const posts = await getPosts(locale);
   console.log("获取到博客文章数量:", posts.length);
   
