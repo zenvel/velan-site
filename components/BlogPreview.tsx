@@ -62,7 +62,7 @@ export default function BlogPreview() {
   const noPostsText = '暂无博客文章';
   
   return (
-    <section className="mx-auto max-w-6xl px-6 py-24">
+    <section className="mx-auto max-w-6xl px-6 pt-12 pb-24">
       <div className="mb-12 flex items-baseline justify-between">
         <h2 className="text-3xl font-bold">{t('latest.title')}</h2>
         <Button asChild variant="link" className="gap-1">

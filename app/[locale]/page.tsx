@@ -102,7 +102,7 @@ export default function Home() {
         </section>
 
         {/* Features Grid */}
-        <section className="mx-auto max-w-6xl px-6 pb-32">
+        <section className="mx-auto max-w-6xl px-6 pb-16">
           <h2 className="mb-8 text-center text-3xl font-bold">{t('features.title')}</h2>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
