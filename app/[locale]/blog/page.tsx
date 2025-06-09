@@ -6,6 +6,11 @@ import { useTranslations } from 'next-intl';
 import LocalizedHead from '@/components/LocalizedHead';
 import { getPosts } from '@/lib/notion';
 import { getTranslations } from 'next-intl/server';
+import { unstable_noStore as noStore } from 'next/cache';
+
+// 强制使用动态渲染，防止静态生成缓存问题
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * Blog posts page - displays a grid of blog posts
@@ -13,6 +18,9 @@ import { getTranslations } from 'next-intl/server';
 export default async function BlogList({ params:{ locale } }:{
   params:{ locale:string }
 }){
+  // 强制禁用缓存
+  noStore();
+  
   console.log("开始获取博客文章，语言:", locale);
   const t = await getTranslations('blog');
   const posts = await getPosts(locale);
@@ -35,6 +43,11 @@ export default async function BlogList({ params:{ locale } }:{
             {t('subtitle')}
           </p>
         </section>
+        
+        {/* 调试信息 - 显示当前语言 */}
+        <div className="max-w-4xl mx-auto p-4 mb-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-center">
+          <p className="text-sm text-blue-700 dark:text-blue-300">当前语言: {locale}</p>
+        </div>
         
         {/* 调试信息 */}
         {posts.length === 0 && (

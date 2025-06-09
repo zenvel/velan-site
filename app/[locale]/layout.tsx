@@ -2,18 +2,24 @@ import '../globals.css';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import Provider from './provider';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { getTranslations } from 'next-intl/server';
 import { Metadata } from 'next';
 
 // 动态导入客户端布局组件
-const ClientLayout = dynamic(() => import('../layout-client'), { ssr: true });
+const ClientLayout = nextDynamic(() => import('../layout-client'), { ssr: true });
 
 // 支持的语言列表
 const LOCALES = ['en', 'zh'] as const;
 type Locale = (typeof LOCALES)[number];
 
+// 强制使用动态渲染 - 使用不同的变量名避免冲突
+export const dynamicParams = false;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // 生成静态参数供Next.js预渲染
+// 注意：虽然我们使用了动态渲染，但仍保留这个函数以确保所有语言路径都有效
 export function generateStaticParams() {
   return LOCALES.map(locale => ({ locale }));
 }

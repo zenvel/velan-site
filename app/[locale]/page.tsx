@@ -12,6 +12,10 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import LocalizedHead from '@/components/LocalizedHead';
 
+// 强制使用动态渲染
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * Velan Home – high-standard landing page
  * – Hero with background glow & CTA
@@ -24,6 +28,9 @@ export default function Home() {
   const t = useTranslations('Home');
   const params = useParams();
   const locale = params.locale as string || 'en';
+  
+  // 添加调试信息
+  console.log("Home页面渲染，当前语言:", locale);
   
   return (
     <>
