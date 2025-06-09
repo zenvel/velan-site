@@ -1,3 +1,4 @@
+// 保留客户端组件标记，但移除动态渲染标记（因为它会在服务器组件中工作）
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,6 @@ import Footer from '@/components/Footer';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import LocalizedHead from '@/components/LocalizedHead';
-
-// 强制使用动态渲染
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * Velan Home – high-standard landing page

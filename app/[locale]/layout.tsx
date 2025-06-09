@@ -13,10 +13,9 @@ const ClientLayout = nextDynamic(() => import('../layout-client'), { ssr: true }
 const LOCALES = ['en', 'zh'] as const;
 type Locale = (typeof LOCALES)[number];
 
-// 强制使用动态渲染 - 使用不同的变量名避免冲突
+// layout文件是服务器组件，可以使用这些配置
 export const dynamicParams = false;
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 // 生成静态参数供Next.js预渲染
 // 注意：虽然我们使用了动态渲染，但仍保留这个函数以确保所有语言路径都有效

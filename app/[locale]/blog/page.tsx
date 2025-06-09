@@ -1,3 +1,4 @@
+// 这是一个服务器组件，所以可以保留dynamic和revalidate配置
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
