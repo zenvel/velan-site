@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
 // 支持的语言列表
-const locales = ['en', 'zh'];
+const locales = ['en', 'zh', 'es'];
 
 // 创建国际化中间件
 const intlMiddleware = createMiddleware({
@@ -24,7 +24,14 @@ export default function middleware(request: NextRequest) {
   if (pathname === '/') {
     const acceptLanguage = request.headers.get('accept-language') || '';
     const preferEnglish = acceptLanguage.toLowerCase().includes('en') && !acceptLanguage.toLowerCase().includes('zh');
-    const locale = preferEnglish ? 'en' : 'zh';  // 默认优先中文
+    const preferSpanish = acceptLanguage.toLowerCase().includes('es') && !acceptLanguage.toLowerCase().includes('zh') && !acceptLanguage.toLowerCase().includes('en');
+    let locale = 'zh';  // 默认优先中文
+    
+    if (preferEnglish) {
+      locale = 'en';
+    } else if (preferSpanish) {
+      locale = 'es';
+    }
     
     console.log('根路径重定向到:', `/${locale}`);
     return Response.redirect(new URL(`/${locale}`, request.url));

@@ -6,11 +6,13 @@ import { ReactNode } from 'react';
 // 静态导入所有翻译文件
 import enMessages from '../../messages/en.json';
 import zhMessages from '../../messages/zh.json';
+import esMessages from '../../messages/es.json';
 
 // 支持的语言和翻译消息
 const MESSAGES = {
   en: enMessages,
-  zh: zhMessages
+  zh: zhMessages,
+  es: esMessages
 };
 
 interface ProviderProps {
@@ -20,7 +22,10 @@ interface ProviderProps {
 
 export default function Provider({ children, locale }: ProviderProps) {
   // 确保使用有效的locale
-  const validLocale = locale === 'zh' ? 'zh' : 'en';
+  let validLocale = 'zh';
+  if (locale === 'en' || locale === 'es') {
+    validLocale = locale;
+  }
   
   return (
     <NextIntlClientProvider 

@@ -7,7 +7,7 @@ import { getTranslations } from 'next-intl/server';
 import { Metadata } from 'next';
 
 // 支持的语言列表
-const LOCALES = ['en', 'zh'] as const;
+const LOCALES = ['en', 'zh', 'es'] as const;
 type Locale = (typeof LOCALES)[number];
 
 // layout文件是服务器组件
@@ -38,6 +38,7 @@ export async function generateMetadata({
     languages: {
       'en': `${baseUrl}/en`,
       'zh': `${baseUrl}/zh`,
+      'es': `${baseUrl}/es`,
     }
   };
   
@@ -66,7 +67,7 @@ export async function generateMetadata({
           alt: 'Velan'
         }
       ],
-      locale: isZh ? 'zh_CN' : 'en_US',
+      locale: isZh ? 'zh_CN' : locale === 'es' ? 'es_ES' : 'en_US',
       type: 'website',
     },
     twitter: {

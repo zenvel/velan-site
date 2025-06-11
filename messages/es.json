@@ -1,0 +1,164 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "blog": "Blog",
+    "about": "Acerca de",
+    "contact": "Contacto"
+  },
+  "newsletter": {
+    "title": "Únete a la Carta de Velan",
+    "description": "Un correo electrónico conciso cada mes sobre construcción de sistemas y vida deliberada.",
+    "placeholder": "tu@email.com",
+    "button": "Suscribirse"
+  },
+  "Home": {
+    "hero": {
+      "title1": "Construir ",
+      "title2": "Sistemas",
+      "title3": "Crear ",
+      "title4": "Claridad",
+      "description": "Soy Velan, un constructor de sistemas independiente documentando el viaje de diseñar productos digitales y flujos de trabajo intencionales.",
+      "readBlog": "Leer el Blog",
+      "aboutMe": "Sobre Mí"
+    },
+    "features": {
+      "title": "Lo Que Encontrarás Aquí",
+      "cards": {
+        "essays": {
+          "title": "Ensayos en Profundidad",
+          "desc": "Escritos prácticos sobre pensamiento sistémico, emprendimiento individual y artesanía digital."
+        },
+        "templates": {
+          "title": "Plantillas de Código Abierto",
+          "desc": "Plantillas minimalistas de Notion + Next.js que puedes copiar para tu propio flujo de trabajo."
+        },
+        "logs": {
+          "title": "Registros de Construcción Pública",
+          "desc": "Informes transparentes sobre ingresos, experimentos y fracasos de dirigir una empresa unipersonal."
+        }
+      }
+    },
+    "latest": {
+      "title": "Últimas Publicaciones",
+      "viewAll": "Ver todo",
+      "samplePost": {
+        "title": "Por Qué Elijo una Empresa Unipersonal",
+        "summary": "Dejar las estructuras corporativas no es una escapada; es entrar en un sistema operativo personal más ajustado. Aquí está la filosofía y las tácticas detrás de ese movimiento..."
+      }
+    },
+    "newsletter": {
+      "title": "Únete a la Carta de Velan",
+      "description": "Un correo electrónico conciso cada mes sobre construcción de sistemas y vida deliberada.",
+      "placeholder": "tu@email.com",
+      "subscribe": "Suscribirse"
+    }
+  },
+  "About": {
+    "title": "Sobre Mí",
+    "bio": "Hola, soy Velan. Un constructor de sistemas independiente creando flujos de trabajo y herramientas digitales intencionales.",
+    "philosophyTitle": "Mi Filosofía",
+    "philosophyText": "Creo en la claridad, la autonomía y la construcción de sistemas que escalan significativamente como uno solo.",
+    "valuesTitle": "Misión · Visión · Valores",
+    "mission": {
+      "title": "Misión",
+      "desc": "Diseñar sistemas modulares que empoderen a las personas para construir, pensar y vivir deliberadamente."
+    },
+    "vision": {
+      "title": "Visión",
+      "desc": "Un mundo donde las empresas unipersonales operan globalmente con claridad, calma e impacto sostenible."
+    },
+    "values": {
+      "title": "Valores",
+      "desc": "Claridad sobre ruido · Sistemas sobre atajos · Artesanía sobre prisa · Abierto sobre cerrado."
+    },
+    "timelineTitle": "Mi Cronología como Constructor",
+    "timeline": {
+      "2010": {
+        "title": "Primera Línea de Código",
+        "desc": "Construí un sitio web de afición en PHP simple durante la universidad, me enamoré de la web."
+      },
+      "2015": {
+        "title": "Líder de Producto @ SaaS Corp",
+        "desc": "Lideré un equipo de 12 ingenieros desarrollando funciones de plataforma de datos para 5 millones de usuarios."
+      },
+      "2023": {
+        "title": "Lanzamiento de Zenvel",
+        "desc": "Dejé el camino corporativo, comencé a construir una marca de sistema independiente para explorar la productividad tranquila."
+      },
+      "2025": {
+        "title": "Código Abierto de Velan OS",
+        "desc": "Lancé el primer plano público de Zenvel OS para creadores independientes."
+      }
+    },
+    "cta": {
+      "title": "Construye Conmigo",
+      "desc": "Si estás creando un producto con propósito y necesitas un pensador de sistemas para acelerar la claridad, hablemos.",
+      "button": "Contáctame"
+    },
+    "footer": "Construido con Next.js y Notion"
+  },
+  "Blog": {
+    "pageTitle": "Publicaciones del Blog",
+    "empty": {
+      "title": "No se encontraron publicaciones",
+      "description": "Vuelve más tarde para nuevo contenido"
+    },
+    "notFound": {
+      "title": "Publicación no encontrada",
+      "description": "Por favor verifica la URL o regresa a la página principal del blog."
+    },
+    "post": {
+      "summaryNote": "Resumen",
+      "emptyContent": "Aún no hay contenido. Por favor, vuelve más tarde."
+    },
+    "readMore": "Leer más",
+    "backToBlog": "Volver al Blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Pensamientos sobre pensamiento sistémico, diseño de productos y emprendimiento individual",
+    "readMore": "Leer más"
+  },
+  "BlogPost": {
+    "backToBlog": "Volver al Blog"
+  },
+  "footer": {
+    "slogan": "Sistemas claros, artesanía intencional"
+  },
+  "Footer": {
+    "slogan": "Sistemas claros, artesanía intencional",
+    "builtWith": "Construido con Next.js y Notion",
+    "about": "Acerca de"
+  },
+  "NotFound": {
+    "message": "¡Ups! Página no encontrada.",
+    "backHome": "Volver a la página principal",
+    "tryAgain": "Intentar de nuevo"
+  },
+  "Metadata": {
+    "home": {
+      "title": "Velan - Construir Sistemas, Crear Claridad",
+      "description": "Constructor de sistemas independiente documentando el viaje de diseñar productos digitales y flujos de trabajo intencionales."
+    },
+    "blog": {
+      "title": "Blog - Velan",
+      "description": "Pensamientos sobre pensamiento sistémico, diseño de productos y emprendimiento individual."
+    },
+    "about": {
+      "title": "Acerca de - Velan",
+      "description": "Conoce la filosofía de Velan, su misión y la historia detrás del estudio unipersonal."
+    }
+  },
+  "error": {
+    "title": "Error Ocurrido",
+    "description": "Algo salió mal. Por favor, inténtalo de nuevo más tarde.",
+    "action": "Volver al Inicio"
+  },
+  "about": {
+    "title": "Sobre Mí",
+    "subtitle": "Soy Velan, un constructor de sistemas independiente.",
+    "paragraph1": "Me enfoco en construir productos digitales y flujos de trabajo con intención clara y propósito, mientras documento todo el proceso.",
+    "paragraph2": "Creo que el pensamiento sistémico puede simplificar tareas complejas y hacer que el proceso de creación sea más eficiente y significativo.",
+    "contact": "Contáctame"
+  }
+} 

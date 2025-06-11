@@ -12,6 +12,7 @@ import { defaultLocale, locales } from '@/i18n';
 // 导入翻译文件
 import zhMessages from '@/messages/zh.json';
 import enMessages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
 
 /**
  * Blog posts page - displays a grid of blog posts
@@ -38,25 +39,42 @@ export default async function BlogList({
   console.log("开始获取博客文章，语言:", locale);
   
   // 直接读取翻译文件，避免getTranslations可能的问题
-  const messages = locale === 'zh' ? zhMessages : enMessages;
+  let messages;
+  if (locale === 'zh') {
+    messages = zhMessages;
+  } else if (locale === 'es') {
+    messages = esMessages;
+  } else {
+    messages = enMessages;
+  }
   
   const posts = await getPosts(locale);
   console.log("获取到博客文章数量:", posts.length);
   
   // 默认封面图片配置 - 根据语言选择不同的标题
-  const DEFAULT_COVER_PATTERNS = locale === 'zh' 
-    ? [
-        { emoji: '📝', title: '文章' },
-        { emoji: '💡', title: '笔记' },
-        { emoji: '🧠', title: '思考' },
-        { emoji: '🚀', title: '项目' }
-      ]
-    : [
-        { emoji: '📝', title: 'Article' },
-        { emoji: '💡', title: 'Note' },
-        { emoji: '🧠', title: 'Thought' },
-        { emoji: '🚀', title: 'Project' }
-      ];
+  let DEFAULT_COVER_PATTERNS;
+  if (locale === 'zh') {
+    DEFAULT_COVER_PATTERNS = [
+      { emoji: '📝', title: '文章' },
+      { emoji: '💡', title: '笔记' },
+      { emoji: '🧠', title: '思考' },
+      { emoji: '🚀', title: '项目' }
+    ];
+  } else if (locale === 'es') {
+    DEFAULT_COVER_PATTERNS = [
+      { emoji: '📝', title: 'Artículo' },
+      { emoji: '💡', title: 'Nota' },
+      { emoji: '🧠', title: 'Pensamiento' },
+      { emoji: '🚀', title: 'Proyecto' }
+    ];
+  } else {
+    DEFAULT_COVER_PATTERNS = [
+      { emoji: '📝', title: 'Article' },
+      { emoji: '💡', title: 'Note' },
+      { emoji: '🧠', title: 'Thought' },
+      { emoji: '🚀', title: 'Project' }
+    ];
+  }
   
   // 格式化日期的辅助函数，确保服务端和客户端渲染一致
   function formatDate(dateString: string | undefined) {
@@ -76,6 +94,13 @@ export default async function BlogList({
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}年${month}月${day}日`;
+      } else if (locale === 'es') {
+        // 西班牙语日期格式
+        return date.toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
       } else {
         // 英文日期格式，使用toLocaleDateString确保一致性
         return date.toLocaleDateString('en-US', { 
@@ -95,6 +120,49 @@ export default async function BlogList({
   const blogSubtitle = messages.blog.subtitle;
   const readMoreText = messages.blog.readMore;
   
+  // 根据语言获取空状态文本
+  function getEmptyStateText() {
+    if (locale === 'zh') {
+      return {
+        noPost: '暂无文章',
+        checkBack: '请稍后再来查看新内容'
+      };
+    } else if (locale === 'es') {
+      return {
+        noPost: 'No se encontraron publicaciones',
+        checkBack: 'Vuelve más tarde para nuevo contenido'
+      };
+    } else {
+      return {
+        noPost: 'No posts found',
+        checkBack: 'Check back later for new content'
+      };
+    }
+  }
+  
+  // 根据语言获取错误文本
+  function getErrorText() {
+    if (locale === 'zh') {
+      return {
+        renderError: '渲染文章列表项出错:',
+        postError: '文章渲染出错'
+      };
+    } else if (locale === 'es') {
+      return {
+        renderError: 'Error al renderizar la publicación del blog:',
+        postError: 'Error al renderizar la publicación'
+      };
+    } else {
+      return {
+        renderError: 'Error rendering blog post:',
+        postError: 'Error rendering post'
+      };
+    }
+  }
+  
+  const emptyStateText = getEmptyStateText();
+  const errorText = getErrorText();
+  
   return (
     <div className="bg-white dark:bg-gray-900">
       <section className="max-w-4xl mx-auto py-12 px-4">
@@ -103,8 +171,8 @@ export default async function BlogList({
         
         {posts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">{locale === 'zh' ? '暂无文章' : 'No posts found'}</p>
-            <p className="text-sm mt-2 text-gray-400">{locale === 'zh' ? '请稍后再来查看新内容' : 'Check back later for new content'}</p>
+            <p className="text-gray-500">{emptyStateText.noPost}</p>
+            <p className="text-sm mt-2 text-gray-400">{emptyStateText.checkBack}</p>
           </div>
         ) : (
           <ul className="grid gap-8">
@@ -187,10 +255,10 @@ export default async function BlogList({
                   </li>
                 );
               } catch (error) {
-                console.error(locale === 'zh' ? '渲染文章列表项出错:' : 'Error rendering blog post:', error, post);
+                console.error(errorText.renderError, error, post);
                 return (
                   <li key={post?.id || index} className="p-4 text-red-500 border border-red-200 rounded">
-                    {locale === 'zh' ? '文章渲染出错' : 'Error rendering post'}
+                    {errorText.postError}
                   </li>
                 );
               }

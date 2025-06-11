@@ -57,13 +57,16 @@ export default function BlogPreview() {
     }
     
     fetchPosts();
+    
+    // 添加语言切换时的强制刷新逻辑
+    console.log("BlogPreview 组件重新渲染，当前语言:", locale);
   }, [locale]); // 添加 locale 作为依赖项，当语言变化时重新获取
   
   // 默认的无文章提示文本
   const noPostsText = '暂无博客文章';
   
   return (
-    <section className="mx-auto max-w-6xl px-6 pt-12 pb-24">
+    <section className="mx-auto max-w-6xl px-6 pt-12 pb-24" key={`blog-section-${locale}`}>
       <div className="mb-12 flex items-baseline justify-between">
         <h2 className="text-3xl font-bold">{t('latest.title')}</h2>
         <Button asChild variant="link" className="gap-1">

@@ -2,9 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 export default function Newsletter() {
   const t = useTranslations('newsletter');
+  const params = useParams();
+  const locale = params.locale as string || 'en';
   
   return (
     <section className="relative mx-auto max-w-4xl rounded-3xl px-8 py-20 text-center text-white overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 shadow-xl">

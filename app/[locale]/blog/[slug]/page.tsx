@@ -15,6 +15,7 @@ import type { Metadata } from 'next';
 // 导入翻译文件，确保国际化正常工作
 import zhMessages from '@/messages/zh.json';
 import enMessages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
 
 // 博客详情页作为服务器组件
 
@@ -74,7 +75,14 @@ export default async function BlogPost({
   }
   
   // 直接使用翻译文件，确保国际化正常工作
-  const messages = locale === 'zh' ? zhMessages : enMessages;
+  let messages;
+  if (locale === 'zh') {
+    messages = zhMessages;
+  } else if (locale === 'es') {
+    messages = esMessages;
+  } else {
+    messages = enMessages;
+  }
   const backToBlogText = messages.BlogPost.backToBlog;
   
   // 确保传递正确的语言参数
@@ -90,14 +98,39 @@ export default async function BlogPost({
   // 格式化日期的辅助函数
   function formatDate(dateString: string | undefined) {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    if (locale === 'zh') {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}年${month}月${day}日`;
+    try {
+      const date = new Date(dateString);
+      
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) {
+        console.warn('无效的日期格式:', dateString);
+        return dateString || '';
+      }
+      
+      if (locale === 'zh') {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}年${month}月${day}日`;
+      } else if (locale === 'es') {
+        // 西班牙语日期格式
+        return date.toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      } else {
+        // 英文日期格式
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      }
+    } catch (error) {
+      console.error('日期格式化错误:', error);
+      return dateString || '';
     }
-    return dateString;
   }
   
   const formattedDate = formatDate(post.date);

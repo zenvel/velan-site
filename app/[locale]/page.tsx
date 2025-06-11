@@ -23,6 +23,7 @@ import LocalizedHead from '@/components/LocalizedHead';
 export default function Home() {
   // 获取翻译文本
   const t = useTranslations('Home');
+  const newsletterT = useTranslations('newsletter');
   const params = useParams();
   const locale = params.locale as string || 'en';
   
@@ -36,7 +37,7 @@ export default function Home() {
         descriptionKey="home.description" 
       />
       
-      <main className="relative overflow-x-clip text-gray-900 dark:text-gray-100">
+      <main className="relative overflow-x-clip text-gray-900 dark:text-gray-100" key={`home-${locale}`}>
         {/* extra blur background */}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <svg className="absolute left-1/2 top-1/3 -translate-x-1/2 blur-3xl opacity-20"
@@ -138,13 +139,13 @@ export default function Home() {
           </div>
         </section>
 
-        <BlogPreview />
+        <BlogPreview key={`blog-preview-${locale}`} />
 
         {/* Newsletter Section */}
-        <Newsletter />
+        <Newsletter key={`newsletter-${locale}`} />
 
         {/* Footer */}
-        <Footer />
+        <Footer key={`footer-${locale}`} />
       </main>
     </>
   );
