@@ -555,6 +555,9 @@ async function processArticleLocale(localeEntry: any): Promise<JoinedPost | null
       page_size: 100
     });
 
+    // 处理块内容，递归获取子块
+    const processedBlocks = await processBlocksWithChildren(blocks.results);
+
     // 从 title 类型属性获取标题
     const title = getArticleTitleFromMapping(lang, aid);
     const slug = safeGetProperty(L, "Slug", "rich_text");
@@ -578,12 +581,47 @@ async function processArticleLocale(localeEntry: any): Promise<JoinedPost | null
       summary: safeGetProperty(L, "Summary", "rich_text"),
       tags,
       localePageId,
-      blocks: blocks.results
+      blocks: processedBlocks
     } as JoinedPost;
   } catch (error) {
     console.error(`处理文章数据失败:`, error);
     return null;
   }
+}
+
+// 递归处理块及其子块
+async function processBlocksWithChildren(blocks: any[]): Promise<any[]> {
+  if (!blocks || blocks.length === 0) return [];
+  
+  const processedBlocks = [];
+  
+  for (const block of blocks) {
+    // 复制块数据
+    const processedBlock = { ...block };
+    
+    // 检查块是否有子块
+    if (block.has_children) {
+      try {
+        // 获取子块
+        const childBlocks = await notion.blocks.children.list({
+          block_id: block.id,
+          page_size: 100
+        });
+        
+        // 递归处理子块
+        processedBlock.children = await processBlocksWithChildren(childBlocks.results);
+      } catch (error) {
+        console.error(`获取块${block.id}的子块失败:`, error);
+        processedBlock.children = [];
+      }
+    } else {
+      processedBlock.children = [];
+    }
+    
+    processedBlocks.push(processedBlock);
+  }
+  
+  return processedBlocks;
 }
 
 // ④ fallback helper

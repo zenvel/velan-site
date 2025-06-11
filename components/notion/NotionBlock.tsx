@@ -71,6 +71,18 @@ export interface NotionBlock {
     caption: RichText[];
   };
   
+  // 表格
+  table?: {
+    table_width: number;
+    has_column_header: boolean;
+    has_row_header: boolean;
+  };
+  
+  // 表格行
+  table_row?: {
+    cells: RichText[][];
+  };
+  
   // 其他属性
   [key: string]: any;
 }
@@ -403,6 +415,62 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
         </div>
       );
     }
+    
+    case 'table': {
+      const tableContent = getBlockContent(block, 'table');
+      if (!tableContent) return null;
+      
+      const hasColumnHeader = tableContent.has_column_header || false;
+      const hasRowHeader = tableContent.has_row_header || false;
+      
+      return (
+        <div className="my-6 overflow-x-auto">
+          <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
+            {block.children && block.children.length > 0 && (
+              <tbody>
+                {block.children.map((row, rowIndex) => {
+                  if (row.type !== 'table_row' || !row.table_row) return null;
+                  
+                  return (
+                    <tr 
+                      key={row.id} 
+                      className={`${
+                        hasColumnHeader && rowIndex === 0 
+                          ? 'bg-gray-100 dark:bg-gray-800' 
+                          : 'border-t border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {row.table_row.cells.map((cell, cellIndex) => {
+                        const isHeader = (hasColumnHeader && rowIndex === 0) || (hasRowHeader && cellIndex === 0);
+                        const CellTag = isHeader ? 'th' : 'td';
+                        
+                        return (
+                          <CellTag 
+                            key={`${row.id}-${cellIndex}`}
+                            className={`px-4 py-2 border border-gray-200 dark:border-gray-700 ${
+                              isHeader 
+                                ? 'font-medium text-left bg-gray-50 dark:bg-gray-800' 
+                                : ''
+                            }`}
+                          >
+                            <RichTextRenderer richTexts={cell} />
+                          </CellTag>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            )}
+          </table>
+          {renderChildren()}
+        </div>
+      );
+    }
+    
+    case 'table_row':
+      // 表格行不单独渲染，由表格渲染
+      return null;
     
     default:
       return (
