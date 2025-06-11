@@ -15,7 +15,25 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['localhost', 'res.cloudinary.com', 'prod-files-secure.s3.us-west-2.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.notion.so',
+      },
+    ],
+    unoptimized: true, // 禁用图片优化以避免超时问题
   },
   // 允许跨源资源加载
   async headers() {

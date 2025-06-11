@@ -174,6 +174,7 @@ const NotionImage = ({ block }: { block: NotionBlock }) => {
   
   let imageUrl = '';
   
+  // 判断图片类型并获取URL
   if (block.image.type === 'external' && block.image.external?.url) {
     imageUrl = block.image.external.url;
   } else if (block.image.type === 'file' && block.image.file?.url) {
@@ -182,25 +183,52 @@ const NotionImage = ({ block }: { block: NotionBlock }) => {
   
   if (!imageUrl) return null;
   
+  // 处理所有Notion图片链接（包括S3和notion.so链接）
+  if (imageUrl.includes('amazonaws.com') || imageUrl.includes('notion.so')) {
+    try {
+      // 尝试清理URL，只保留基本部分
+      const urlObj = new URL(imageUrl);
+      const path = urlObj.pathname;
+      
+      // 提取图片的基础URL（移除所有查询参数）
+      const baseUrl = `${urlObj.protocol}//${urlObj.host}${path}`;
+      
+      // 对于S3链接，通过我们的代理获取
+      // 这可以避免临时令牌过期和CORS问题
+      imageUrl = `/api/image-proxy?url=${encodeURIComponent(baseUrl)}`;
+      console.log(`使用图片代理: ${baseUrl}`);
+    } catch (error) {
+      console.error('处理图片URL时出错:', error);
+      // 出错时使用完整原始链接通过代理获取
+      imageUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+    }
+  }
+  
   const caption = block.image.caption && block.image.caption.length > 0 
     ? <figcaption className="text-center text-sm text-gray-500 mt-2">
         <RichTextRenderer richTexts={block.image.caption} />
       </figcaption> 
     : null;
   
+  // 始终使用常规img标签来显示图片，避免Next.js Image组件的限制和超时问题
   return (
     <figure className="my-6">
       <div className="relative max-w-full h-auto rounded-lg shadow-sm mx-auto overflow-hidden">
-        <Image 
+        <img 
           src={imageUrl} 
           alt={caption ? "图片带有说明" : "Notion中的图片"} 
-          className="max-w-full h-auto rounded-lg"
-          width={700}
-          height={400}
-          style={{ objectFit: 'contain' }}
+          className="max-w-full h-auto rounded-lg mx-auto"
           loading="lazy"
-          quality={85}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          onError={(e) => {
+            // 图片加载失败时尝试回退到占位图
+            console.error(`图片加载失败: ${imageUrl}`);
+            const target = e.target as HTMLImageElement;
+            // 防止循环加载错误
+            if (!target.src.includes('placeholder')) {
+              target.src = '/images/placeholder.png';
+              target.onerror = null; // 移除错误处理器防止循环
+            }
+          }}
         />
       </div>
       {caption}
