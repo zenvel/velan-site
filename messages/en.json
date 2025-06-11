@@ -13,11 +13,8 @@
   },
   "Home": {
     "hero": {
-      "title1": "Build ",
-      "title2": "Systems",
-      "title3": "Craft ",
-      "title4": "Clarity",
-      "description": "I'm Velan-solo system builder documenting the journey of designing intentional digital products and workflows.",
+      "title": "Build Systems · <highlight>Craft\u00A0Clarity</highlight>",
+      "description": "I'm Velan — a solo system builder weaving knowledge, tools and products into clear workflows.",
       "readBlog": "Read the Blog",
       "aboutMe": "About Me"
     },
@@ -55,9 +52,9 @@
   },
   "About": {
     "title": "About Me",
-    "bio": "Hi, I'm Velan. A solo system builder creating intentional digital workflows and tools.",
+    "bio": "Hi, I'm Velan — an indie developer obsessed with designing system-driven digital tools and workflows.",
     "philosophyTitle": "My Philosophy",
-    "philosophyText": "I believe in clarity, autonomy, and building systems that scale meaningfully as one.",
+    "philosophyText": "I believe in clarity, autonomy, and systems that grow with the individual.",
     "valuesTitle": "Mission · Vision · Values",
     "mission": {
       "title": "Mission",

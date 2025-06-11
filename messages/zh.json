@@ -13,11 +13,8 @@
   },
   "Home": {
     "hero": {
-      "title1": "构建",
-      "title2": "系统",
-      "title3": "编织",
-      "title4": "清晰",
-      "description": "我是 Velan —— 一名记录构建意图明确的数字产品与工作流的一人系统创作者。",
+      "title": "独立构建 · <highlight>系统致远</highlight>",
+      "description": "我是 Velan —— 用系统思维把知识、工具和产品织成清晰流程的一人创作者。",
       "readBlog": "阅读博客",
       "aboutMe": "关于我"
     },
@@ -55,7 +52,7 @@
   },
   "About": {
     "title": "关于我",
-    "bio": "你好，我是 Velan，一位专注构建系统化数字工具和工作流的独立开发者。",
+    "bio": "你好，我是 Velan，一名热衷用系统化方法打造数字工具和工作流的独立开发者。",
     "philosophyTitle": "我的理念",
     "philosophyText": "我相信清晰、自主，以及构建能随个人成长而扩展的系统。",
     "valuesTitle": "使命 · 愿景 · 价值观",

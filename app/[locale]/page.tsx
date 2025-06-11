@@ -82,15 +82,21 @@ export default function Home() {
         
         {/* Hero Section */}
         <section className="mx-auto max-w-5xl px-6 pt-36 pb-32 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 35 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-6xl md:text-7xl font-extrabold leading-tight tracking-tight"
-          >
-            {t('hero.title1')}<span className="text-blue-600 dark:text-blue-400">{t('hero.title2')}</span><br />
-            {t('hero.title3')}<span className="text-blue-600 dark:text-blue-400">{t('hero.title4')}</span>
-          </motion.h1>
+          <div className="flex justify-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 35 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-6xl md:text-7xl font-extrabold leading-tight tracking-tight whitespace-nowrap"
+            >
+              {t.rich('hero.title', {
+                highlight: (chunks) => (
+                  <span className="text-blue-600 dark:text-blue-400">{chunks}</span>
+                )
+              })}
+            </motion.h1>
+          </div>
+
           <p className="mx-auto mt-10 max-w-[60ch] text-2xl leading-relaxed text-gray-500 dark:text-gray-400">
             {t('hero.description')}
           </p>

@@ -13,11 +13,8 @@
   },
   "Home": {
     "hero": {
-      "title1": "Construir ",
-      "title2": "Sistemas",
-      "title3": "Crear ",
-      "title4": "Claridad",
-      "description": "Soy Velan, un constructor de sistemas independiente documentando el viaje de diseñar productos digitales y flujos de trabajo intencionales.",
+      "title": "Construir Sistemas · <highlight>Crear\u00A0Claridad</highlight>",
+      "description": "Soy Velan — un creador independiente que convierte conocimientos, herramientas y productos en flujos claros.",
       "readBlog": "Leer el Blog",
       "aboutMe": "Sobre Mí"
     },
@@ -55,9 +52,9 @@
   },
   "About": {
     "title": "Sobre Mí",
-    "bio": "Hola, soy Velan. Un constructor de sistemas independiente creando flujos de trabajo y herramientas digitales intencionales.",
+    "bio": "Hola, soy Velan, un desarrollador independiente apasionado por diseñar herramientas y flujos digitales basados en sistemas.",
     "philosophyTitle": "Mi Filosofía",
-    "philosophyText": "Creo en la claridad, la autonomía y la construcción de sistemas que escalan significativamente como uno solo.",
+    "philosophyText": "Creo en la claridad, la autonomía y los sistemas que crecen con la persona.",
     "valuesTitle": "Misión · Visión · Valores",
     "mission": {
       "title": "Misión",
