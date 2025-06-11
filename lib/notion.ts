@@ -284,7 +284,7 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
     console.log(`📄 查询 Articles 数据库: ${ARTICLES_DB}`);
     const articles = await notion.databases.query({
       database_id: ARTICLES_DB,
-      filter: { property: "Publish", checkbox: { equals: true } },
+      filter: { property: "Status", select: { equals: "Published" } },
       sorts: [{ property: "Date", direction: "descending" }]
     });
     console.log(`📄 Articles 查询结果: ${articles.results.length} 条记录`);
@@ -574,7 +574,7 @@ async function processArticleLocale(localeEntry: any): Promise<JoinedPost | null
       id: art.id,
       date: (art as any).properties.Date?.date?.start || new Date().toISOString().split('T')[0],
       coverUrl: coverUrl,
-      publish: (art as any).properties.Publish?.checkbox || false,
+      publish: (art as any).properties.Status?.select?.name === "Published",
       lang,
       title,
       slug,
