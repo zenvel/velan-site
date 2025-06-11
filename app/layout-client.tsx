@@ -2,13 +2,7 @@
 
 import "./globals.css";
 import { useState, useEffect, Suspense, memo, lazy } from 'react';
-import dynamic from 'next/dynamic';
-
-// 动态导入Nav组件以避免SSR问题
-const Nav = dynamic(() => import('@/components/Nav'), { 
-  ssr: false,
-  loading: () => <div className="w-full py-4 px-6" /> // 提供一个占位符保持布局稳定
-});
+import Nav from '@/components/Nav';
 
 // 懒加载StagewiseProvider，确保只实例化一次
 const StagewiseProvider = lazy(() => import('@/components/StagewiseProvider'));
@@ -43,10 +37,7 @@ export default function ClientLayout({
   return (
     <div className="antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans min-h-screen" suppressHydrationWarning>
       <div suppressHydrationWarning>
-        {/* 使用Suspense包装Nav组件，确保加载时有占位内容 */}
-        <Suspense fallback={<div className="w-full py-4 px-6" />}>
-          <Nav />
-        </Suspense>
+        <Nav />
       </div>
       <main className="min-h-screen">
         {children}

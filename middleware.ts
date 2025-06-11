@@ -9,7 +9,7 @@ const intlMiddleware = createMiddleware({
   // 必须匹配所有支持的语言代码
   locales,
   // 用于未匹配任何语言时
-  defaultLocale: 'en',
+  defaultLocale: 'zh',
   // 强制总是显示语言前缀
   localePrefix: 'always'
 });
@@ -23,8 +23,8 @@ export default function middleware(request: NextRequest) {
   // 如果是根路径，手动重定向到默认语言
   if (pathname === '/') {
     const acceptLanguage = request.headers.get('accept-language') || '';
-    const preferChinese = acceptLanguage.toLowerCase().includes('zh');
-    const locale = preferChinese ? 'zh' : 'en';
+    const preferEnglish = acceptLanguage.toLowerCase().includes('en') && !acceptLanguage.toLowerCase().includes('zh');
+    const locale = preferEnglish ? 'en' : 'zh';  // 默认优先中文
     
     console.log('根路径重定向到:', `/${locale}`);
     return Response.redirect(new URL(`/${locale}`, request.url));

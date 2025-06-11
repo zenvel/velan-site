@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -126,10 +127,13 @@ export default function BlogPreview() {
                 <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
                   <div className="aspect-video overflow-hidden" style={{ background: gradient }}>
                     {coverUrl ? (
-                      <img 
+                      <Image 
                         src={coverUrl} 
                         alt={title} 
+                        width={400}
+                        height={225}
                         className="h-full w-full object-cover"
+                        priority={index < 3}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-white">

@@ -1,4 +1,4 @@
-// 这是一个服务器组件，所以可以保留dynamic和revalidate配置
+// 这是一个服务器组件
 import Link from 'next/link';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
@@ -12,10 +12,6 @@ import { defaultLocale, locales } from '@/i18n';
 // 导入翻译文件
 import zhMessages from '@/messages/zh.json';
 import enMessages from '@/messages/en.json';
-
-// 强制使用动态渲染，防止静态生成缓存问题
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * Blog posts page - displays a grid of blog posts
@@ -69,18 +65,28 @@ export default async function BlogList({
       // 使用固定的时间字符串格式而不是依赖 locale
       const date = new Date(dateString);
       
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) {
+        console.warn('无效的日期格式:', dateString);
+        return dateString || '';
+      }
+      
       if (locale === 'zh') {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}年${month}月${day}日`;
       } else {
-        // 英文日期格式
-        return dateString;
+        // 英文日期格式，使用toLocaleDateString确保一致性
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
       }
     } catch (error) {
       console.error('日期格式化错误:', error);
-      return dateString;
+      return dateString || '';
     }
   }
   
@@ -105,12 +111,20 @@ export default async function BlogList({
             {posts.map((post: JoinedPost, index: number) => {
               try {
                 // 添加安全检查
-                const { slug, title, date, tags, summary, coverUrl } = post;
+                if (!post || typeof post !== 'object') {
+                  console.warn('无效的文章数据:', post);
+                  return null;
+                }
+                
+                const { slug, title, date, tags, summary, coverUrl, id } = post;
                 
                 // 为标题选择默认emoji
                 const defaultPattern = DEFAULT_COVER_PATTERNS[index % DEFAULT_COVER_PATTERNS.length];
                 
-                if (!slug || !title) return null;
+                if (!slug || !title) {
+                  console.warn('缺少必要的文章数据:', { slug, title, id });
+                  return null;
+                }
                 
                 // 格式化日期
                 const formattedDate = formatDate(date);
@@ -121,10 +135,13 @@ export default async function BlogList({
                       <article className="rounded-2xl bg-white dark:bg-gray-800/50 border dark:border-gray-700 shadow-sm hover:shadow-md transition overflow-hidden">
                         {/* 封面图 */}
                         {coverUrl ? (
-                          <img
+                          <Image
                             src={coverUrl}
                             alt={title}
+                            width={600}
+                            height={192}
                             className="w-full h-48 object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
+                            priority={index < 3}
                           />
                         ) : (
                           <div className="w-full h-48 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-400 text-white text-3xl">
@@ -136,8 +153,8 @@ export default async function BlogList({
                           {/* 时间 + 标签 */}
                           <div className="flex flex-wrap justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                             <time suppressHydrationWarning>{formattedDate}</time>
-                            <div className="flex gap-2">
-                              {tags && tags.length > 0 && tags.slice(0, 2).map((tag, idx) => (
+                            <div className="flex flex-wrap gap-2">
+                              {tags && tags.length > 0 && tags.map((tag, idx) => (
                                 <span
                                   key={idx}
                                   className="rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1"
@@ -170,8 +187,12 @@ export default async function BlogList({
                   </li>
                 );
               } catch (error) {
-                console.error(locale === 'zh' ? '渲染文章列表项出错:' : 'Error rendering blog post:', error);
-                return null;
+                console.error(locale === 'zh' ? '渲染文章列表项出错:' : 'Error rendering blog post:', error, post);
+                return (
+                  <li key={post?.id || index} className="p-4 text-red-500 border border-red-200 rounded">
+                    {locale === 'zh' ? '文章渲染出错' : 'Error rendering post'}
+                  </li>
+                );
               }
             })}
           </ul>

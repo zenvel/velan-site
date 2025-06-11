@@ -22,17 +22,20 @@ const ARTICLE_TITLES: ArticleTitlesType = {
   'zh': {
     1: '我为何选择一人公司',
     2: '以系统观提升生产力',
-    3: '公开式构建：透明与成长'
+    3: '公开式构建：透明与成长',
+    4: '为什么我要打造一人公司：Velan的出发点'
   },
   'en': {
     1: 'Why I Choose a One-Person Company',
     2: 'The Systems Approach to Productivity',
-    3: 'Build-in-Public: Transparency'
+    3: 'Build-in-Public: Transparency',
+    4: "Why I'm Building a One-Person Company: Velan's Starting Point"
   },
   'es': {
     1: 'Por qué elijo una empresa de una persona',
     2: 'Enfoque sistémico para la productividad',
-    3: 'Construir en público: transparencia'
+    3: 'Construir en público: transparencia',
+    4: 'Por qué estoy construyendo una empresa de una persona: el punto de partida de Velan'
   }
 };
 
