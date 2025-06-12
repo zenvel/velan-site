@@ -82,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             
             <p style="font-size: 14px; color: #666;">
               如需退订，请回复此邮件或点击 
-              <a href="https://velan.zenvel.io/unsubscribe?email=${encodeURIComponent(email)}" 
+              <a href="https://velan.zenvel.io/zh/unsubscribe?email=${encodeURIComponent(email)}" 
                  style="color: #667eea; text-decoration: none;">退订链接</a>
             </p>
             
