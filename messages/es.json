@@ -9,7 +9,15 @@
     "title": "Únete a la Carta de Velan",
     "description": "Un correo electrónico conciso cada mes sobre construcción de sistemas y vida deliberada.",
     "placeholder": "tu@email.com",
-    "button": "Suscribirse"
+    "button": "Suscribirse",
+    "success": "🎉 ¡Suscripción exitosa! Por favor revisa tu email para confirmación",
+    "error": "😢 Error en la suscripción",
+    "loading": "Procesando...",
+    "subscribed": "¡Suscripción exitosa! Gracias por unirte.",
+    "validation": {
+      "required": "Por favor ingresa tu dirección de email",
+      "invalid": "Por favor ingresa una dirección de email válida"
+    }
   },
   "Home": {
     "hero": {

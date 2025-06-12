@@ -9,7 +9,15 @@
     "title": "Join the Velan Letter",
     "description": "One concise email each month on building systems & living deliberately.",
     "placeholder": "your@email.com",
-    "button": "Subscribe"
+    "button": "Subscribe",
+    "success": "🎉 Successfully subscribed! Please check your email for confirmation",
+    "error": "😢 Subscription failed",
+    "loading": "Processing...",
+    "subscribed": "Successfully subscribed! Thank you for joining.",
+    "validation": {
+      "required": "Please enter your email address",
+      "invalid": "Please enter a valid email address"
+    }
   },
   "Home": {
     "hero": {

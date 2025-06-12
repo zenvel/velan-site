@@ -1216,3 +1216,32 @@ async function getLocaleByArticle(aid: number, lang = "en"): Promise<LocaleRow |
     return null;
   }
 }
+
+const NEWSLETTER_DB = process.env.NOTION_NEWSLETTER_DB_ID;
+
+export async function fetchIssueById(id: string) {
+  const response = await notion.pages.retrieve({ page_id: id });
+  const properties = response.properties as any;
+  
+  return {
+    title: properties.Title.title[0].plain_text,
+    content: properties.Content.rich_text[0].plain_text,
+    articles: properties.Articles.relation.map((r: any) => ({
+      slug: r.id,
+      title: r.title
+    }))
+  };
+}
+
+export async function updateIssueStatus(id: string, status: string) {
+  await notion.pages.update({
+    page_id: id,
+    properties: {
+      Status: {
+        select: {
+          name: status
+        }
+      }
+    }
+  });
+}

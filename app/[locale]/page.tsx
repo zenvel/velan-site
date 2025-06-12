@@ -7,11 +7,11 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import BlogPreview from '@/components/BlogPreview';
 import ParticleBg from '@/components/Particles';
-import Newsletter from '@/components/Newsletter';
 import Footer from '@/components/Footer';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import LocalizedHead from '@/components/LocalizedHead';
+import NewsletterInline from '@/components/NewsletterInline';
 
 /**
  * Velan Home – high-standard landing page
@@ -25,7 +25,7 @@ export default function Home() {
   const t = useTranslations('Home');
   const newsletterT = useTranslations('newsletter');
   const params = useParams();
-  const locale = params.locale as string || 'en';
+  const locale = (params?.locale as string) || 'en';
   
   // 添加调试信息
   console.log("Home页面渲染，当前语言:", locale);
@@ -148,7 +148,7 @@ export default function Home() {
         <BlogPreview key={`blog-preview-${locale}`} />
 
         {/* Newsletter Section */}
-        <Newsletter key={`newsletter-${locale}`} />
+        <NewsletterInline />
 
         {/* Footer */}
         <Footer key={`footer-${locale}`} />
