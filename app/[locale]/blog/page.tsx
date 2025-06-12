@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Footer from '@/components/Footer';
 import { getPosts } from '@/lib/notion';
 import { getTranslations } from 'next-intl/server';
-import { unstable_noStore as noStore } from 'next/cache';
 import { Metadata } from 'next';
 import type { JoinedPost } from '@/lib/notion-types';
 import { defaultLocale, locales } from '@/i18n';
@@ -19,9 +18,6 @@ export default async function BlogList({
   params: { locale: string } | Promise<{ locale: string }>;
 }) {
   try {
-  // 强制禁用缓存
-  noStore();
-  
   // 正确地等待参数解析
   const resolvedParams = await Promise.resolve(params);
   

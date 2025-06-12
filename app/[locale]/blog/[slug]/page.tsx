@@ -5,7 +5,6 @@ import { ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
 import NotionRenderer from '@/components/notion/NotionRenderer';
 import { getPost } from '@/lib/notion';
-import { unstable_noStore as noStore } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
@@ -19,9 +18,6 @@ type BlogParams = {
 
 // 博客文章页面组件
 export default async function BlogDetailPage({ params }: BlogParams) {
-  // 强制禁用缓存
-  noStore();
-  
   // 等待params
   const { slug, locale } = await params;
   
@@ -129,7 +125,7 @@ export default async function BlogDetailPage({ params }: BlogParams) {
         
           {/* 文章正文 */}
         <div className="prose dark:prose-invert prose-lg max-w-none prose-img:rounded-lg prose-headings:font-bold">
-          <NotionRenderer blocks={post.blocks} />
+          <NotionRenderer blocks={post.blocks || []} />
         </div>
       </article>
       
