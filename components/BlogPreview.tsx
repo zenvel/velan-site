@@ -84,8 +84,16 @@ export default function BlogPreview() {
           // 显示文章列表
           posts.map((post, index) => {
             // 直接使用 JoinedPost 类型的属性
-            const { title, slug, date, tags = [], summary = '' } = post;
+            const { title, slug, date, tags = [], summary = '', articleID } = post;
             const coverUrl = post.coverUrl;
+            
+            // 如果没有slug，跳过这篇文章
+            if (!slug || slug.trim() === '') {
+              console.warn(`博客预览 - 文章缺少slug，跳过: "${title}"`);
+              return null;
+            }
+            
+            const postSlug = slug;
             
             // 如果没有真实文章数据，使用示例帖子
             if (!title) {
@@ -126,7 +134,7 @@ export default function BlogPreview() {
             const icon = icons[index % icons.length];
             
             return (
-              <Link key={post.id} href={`/${locale}/blog/${slug}`}>
+              <Link key={post.id} href={`/${locale}/blog/${postSlug}`}>
                 <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
                   <div className="aspect-video overflow-hidden" style={{ background: gradient }}>
                     {coverUrl ? (

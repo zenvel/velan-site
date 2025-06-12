@@ -104,6 +104,7 @@
       "title": "Post not found",
       "description": "Please check the URL or return to the blog homepage."
     },
+    "backToHome": "Back to Home",
     "post": {
       "summaryNote": "Summary",
       "emptyContent": "No content yet. Please check back later."
@@ -126,6 +127,10 @@
     "slogan": "Clear systems, intentional craft",
     "builtWith": "Built with Next.js & Notion",
     "about": "About"
+  },
+  "notFound": {
+    "description": "Oops! Page not found.",
+    "backToHome": "Back to homepage"
   },
   "NotFound": {
     "message": "Oops! Page not found.",

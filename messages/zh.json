@@ -104,6 +104,7 @@
       "title": "文章不存在",
       "description": "请检查URL或返回博客首页。"
     },
+    "backToHome": "返回首页",
     "post": {
       "summaryNote": "文章引言",
       "emptyContent": "内容尚未添加，请稍后查看。"
@@ -123,6 +124,10 @@
     "slogan": "清晰系统，有意之作",
     "builtWith": "基于 Next.js 与 Notion 构建",
     "about": "关于我"
+  },
+  "notFound": {
+    "description": "页面不存在或已被移除。",
+    "backToHome": "返回首页"
   },
   "NotFound": {
     "message": "页面不存在或已被移除。",

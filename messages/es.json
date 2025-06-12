@@ -104,6 +104,7 @@
       "title": "Publicación no encontrada",
       "description": "Por favor verifica la URL o regresa a la página principal del blog."
     },
+    "backToHome": "Volver al Inicio",
     "post": {
       "summaryNote": "Resumen",
       "emptyContent": "Aún no hay contenido. Por favor, vuelve más tarde."
@@ -126,6 +127,10 @@
     "slogan": "Sistemas claros, artesanía intencional",
     "builtWith": "Construido con Next.js y Notion",
     "about": "Acerca de"
+  },
+  "notFound": {
+    "description": "¡Ups! Página no encontrada.",
+    "backToHome": "Volver a la página principal"
   },
   "NotFound": {
     "message": "¡Ups! Página no encontrada.",
