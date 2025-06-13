@@ -1220,17 +1220,55 @@ async function getLocaleByArticle(aid: number, lang = "en"): Promise<LocaleRow |
 const NEWSLETTER_DB = process.env.NOTION_NEWSLETTER_DB_ID;
 
 export async function fetchIssueById(id: string) {
-  const response = await notion.pages.retrieve({ page_id: id });
-  const properties = response.properties as any;
-  
-  return {
-    title: properties.Title.title[0].plain_text,
-    content: properties.Content.rich_text[0].plain_text,
-    articles: properties.Articles.relation.map((r: any) => ({
-      slug: r.id,
-      title: r.title
-    }))
-  };
+  try {
+    const response = await notionApiWithRetry(
+      () => notion.pages.retrieve({ page_id: id }),
+      `获取Newsletter Issue[${id}]`
+    );
+    const properties = response.properties as any;
+    
+    // 改进的取值函数
+    const getText = (prop: any) => {
+      if (!prop?.rich_text) return '';
+      // 拼接所有rich_text块的文本
+      return prop.rich_text.map((text: any) => text?.plain_text || '').join('');
+    };
+    
+    const getTitle = (prop: any) => {
+      if (!prop?.title) return '';
+      return prop.title.map((text: any) => text?.plain_text || '').join('');
+    };
+    
+    const getFormula = (prop: any) => {
+      if (prop?.formula?.type === 'string') {
+        return prop.formula.string || '';
+      }
+      return '';
+    };
+    
+
+    
+    return {
+      title: getTitle(properties.Title),
+      issueNo: properties['Issue No']?.number ?? 1,
+      status: properties.Status?.select?.name ?? '',
+      contentTpl: getText(properties.Content),
+      microLog: getText(properties.micro_log),
+      article1: {
+        title: getFormula(properties.article1_title),
+        summary: getFormula(properties.article1_summary),
+        slug: getFormula(properties.article1_slug),
+      },
+      article2: {
+        title: getFormula(properties.article2_title),
+        summary: getFormula(properties.article2_summary),
+        slug: getFormula(properties.article2_slug),
+      },
+    };
+  } catch (error) {
+    console.error(`获取Newsletter Issue失败:`, error);
+    throw error;
+  }
 }
 
 export async function updateIssueStatus(id: string, status: string) {
