@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <p style="font-size: 14px; color: #666;">
             感谢您订阅 Velan 通讯！<br>
             如需退订，请点击 
-            <a href="https://velan.zenvel.io/unsubscribe" 
+            <a href="https://velan.zenvel.io/zh/unsubscribe?email=\${recipient}" 
                style="color: #667eea; text-decoration: none;">退订链接</a>
           </p>
           

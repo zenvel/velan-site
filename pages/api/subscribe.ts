@@ -41,11 +41,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
         console.log(`联系人 ${email} 已添加到 Audience: ${audienceId}`);
       } catch (contactError: any) {
-        // 如果联系人已存在，忽略错误
-        if (!contactError.message?.includes('already exists')) {
-          console.error('添加联系人到 Audience 失败:', contactError);
+        // 如果联系人已存在，则更新其状态为未退订
+        if (contactError.message?.includes('already exists')) {
+          console.log(`联系人 ${email} 已存在于 Audience 中，正在更新状态...`);
+          try {
+            await resend.contacts.update({
+              email,
+              unsubscribed: false,
+              audienceId: audienceId,
+            });
+            console.log(`联系人 ${email} 状态已更新为订阅中`);
+          } catch (updateError: any) {
+            console.error('更新联系人状态失败:', updateError);
+          }
         } else {
-          console.log(`联系人 ${email} 已存在于 Audience 中`);
+          console.error('添加联系人到 Audience 失败:', contactError);
         }
       }
     }
