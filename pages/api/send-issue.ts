@@ -12,6 +12,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const issue = await fetchIssueById(id);
     
+    // 添加调试信息
+    console.log('📊 Issue数据详情:', {
+      title: issue.title,
+      status: issue.status,
+      issueNo: issue.issueNo,
+      contentLength: issue.contentTpl?.length,
+      microLog: issue.microLog,
+      article1: issue.article1,
+      article2: issue.article2
+    });
+    
     // 状态检查
     if (issue.status === 'Sent') {
       return res.status(200).json({ ok: true, message: 'Already sent' });
@@ -25,6 +36,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 生成美观的HTML邮件模板
     const html = generateNewsletterHTML(issue);
+    
+    // 记录生成的HTML长度，便于调试
+    console.log('📧 生成的HTML长度:', html.length);
+    console.log('📧 HTML预览 (前500字符):', html.substring(0, 500));
 
     const audienceId = process.env.RESEND_AUDIENCE_ID;
     if (!audienceId) {

@@ -1,9 +1,15 @@
 import { Client } from '@notionhq/client';
 import { ArticleRow, LocaleRow, JoinedPost } from './notion-types';
 
-// 创建Notion客户端实例
-const notion = new Client({ 
-  auth: process.env.NOTION_TOKEN || '',
+// 创建分离的Notion客户端实例
+const articlesNotion = new Client({ 
+  auth: process.env.NOTION_ARTICLES_TOKEN || '',
+  notionVersion: '2022-06-28', // 明确指定API版本
+  timeoutMs: 60000, // 增加超时时间到60秒
+});
+
+const newsletterNotion = new Client({ 
+  auth: process.env.NOTION_NEWSLETTER_TOKEN || '',
   notionVersion: '2022-06-28', // 明确指定API版本
   timeoutMs: 60000, // 增加超时时间到60秒
 });
@@ -320,7 +326,7 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
   try {
     // 获取所有文章
     const articles = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: ARTICLES_DB,
         sorts: [{ property: "Date", direction: "descending" }]
       }),
@@ -382,7 +388,7 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
 
     // 获取所有语言版本数据
     const locales = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: LOCALES_DB
       }),
       '获取Locales列表'
@@ -772,7 +778,7 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
     
     // 先获取所有 Locale 条目（使用重试机制）
     const localePages = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: LOCALES_DB
       }),
       '获取Locale条目'
@@ -841,7 +847,7 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
             relatedArticleId = relationProperty.relation[0].id;
             
             const articlesResponse = await notionApiWithRetry(
-              () => notion.databases.query({
+              () => articlesNotion.databases.query({
                 database_id: ARTICLES_DB,
                 page_size: 100
               }),
@@ -919,7 +925,7 @@ async function processArticleLocale(localeEntry: any): Promise<JoinedPost | null
     
     // 获取所有文章，以便后续处理
     const allArticlesResponse = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: ARTICLES_DB,
         page_size: 100
       }),
@@ -1098,7 +1104,7 @@ async function processBlocksWithChildren(blocks: any[]): Promise<any[]> {
       try {
         // 获取子块（使用重试机制）
         const childBlocks = await notionApiWithRetry(
-          () => notion.blocks.children.list({
+          () => articlesNotion.blocks.children.list({
             block_id: block.id,
             page_size: 100
           }),
@@ -1126,7 +1132,7 @@ async function getLocaleByArticle(aid: number, lang = "en"): Promise<LocaleRow |
   try {
     // 获取所有 Locale 条目（使用重试机制）
     const localePages = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: LOCALES_DB
       }),
       '获取Locale条目'
@@ -1134,7 +1140,7 @@ async function getLocaleByArticle(aid: number, lang = "en"): Promise<LocaleRow |
     
     // 获取所有文章，以便解析关系（使用重试机制）
     const articlesResponse = await notionApiWithRetry(
-      () => notion.databases.query({
+      () => articlesNotion.databases.query({
         database_id: ARTICLES_DB
       }),
       '获取Articles条目'
@@ -1222,7 +1228,7 @@ const NEWSLETTER_DB = process.env.NOTION_NEWSLETTER_DB_ID;
 export async function fetchIssueById(id: string) {
   try {
     const response = await notionApiWithRetry(
-      () => notion.pages.retrieve({ page_id: id }),
+      () => newsletterNotion.pages.retrieve({ page_id: id }),
       `获取Newsletter Issue[${id}]`
     );
     const properties = response.properties as any;
@@ -1272,7 +1278,7 @@ export async function fetchIssueById(id: string) {
 }
 
 export async function updateIssueStatus(id: string, status: string) {
-  await notion.pages.update({
+  await newsletterNotion.pages.update({
     page_id: id,
     properties: {
       Status: {
