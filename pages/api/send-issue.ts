@@ -40,6 +40,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 记录生成的HTML长度，便于调试
     console.log('📧 生成的HTML长度:', html.length);
     console.log('📧 HTML预览 (前500字符):', html.substring(0, 500));
+    
+    // 检查文章标题和摘要是否存在于HTML中
+    const hasArticle1Title = issue.article1.title && html.includes(issue.article1.title);
+    const hasArticle1Summary = issue.article1.summary && html.includes(issue.article1.summary);
+    const hasArticle2Title = issue.article2.title && html.includes(issue.article2.title);
+    const hasArticle2Summary = issue.article2.summary && html.includes(issue.article2.summary);
+    
+    console.log('📊 HTML内容检查:');
+    console.log('   Article1 Title:', issue.article1.title ? `"${issue.article1.title}"` : '(空)', hasArticle1Title ? '✅' : '❌');
+    console.log('   Article1 Summary:', issue.article1.summary ? `"${issue.article1.summary}"` : '(空)', hasArticle1Summary ? '✅' : '❌');
+    console.log('   Article2 Title:', issue.article2.title ? `"${issue.article2.title}"` : '(空)', hasArticle2Title ? '✅' : '❌');
+    console.log('   Article2 Summary:', issue.article2.summary ? `"${issue.article2.summary}"` : '(空)', hasArticle2Summary ? '✅' : '❌');
+    
+    if ((!issue.article1.title || !issue.article1.summary || !issue.article2.title || !issue.article2.summary) ||
+        (!hasArticle1Title && issue.article1.title) || 
+        (!hasArticle1Summary && issue.article1.summary) || 
+        (!hasArticle2Title && issue.article2.title) || 
+        (!hasArticle2Summary && issue.article2.summary)) {
+      console.warn('⚠️ 警告: 部分文章内容为空或未正确渲染到HTML中!');
+    }
 
     const audienceId = process.env.RESEND_AUDIENCE_ID;
     if (!audienceId) {
