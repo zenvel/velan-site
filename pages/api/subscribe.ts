@@ -34,29 +34,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (audienceId) {
       // 添加联系人到 Audience
       try {
-        await resend.contacts.create({
-          email,
-          unsubscribed: false,
-          audienceId: audienceId,
-        });
-        console.log(`联系人 ${email} 已添加到 Audience: ${audienceId}`);
-      } catch (contactError: any) {
-        // 如果联系人已存在，则更新其状态为未退订
-        if (contactError.message?.includes('already exists')) {
-          console.log(`联系人 ${email} 已存在于 Audience 中，正在更新状态...`);
-          try {
-            await resend.contacts.update({
-              email,
-              unsubscribed: false,
-              audienceId: audienceId,
-            });
-            console.log(`联系人 ${email} 状态已更新为订阅中`);
-          } catch (updateError: any) {
-            console.error('更新联系人状态失败:', updateError);
-          }
-        } else {
-          console.error('添加联系人到 Audience 失败:', contactError);
+        // 先尝试获取联系人信息，检查是否已存在
+        try {
+          const existingContact = await resend.contacts.get({
+            email: email,
+            audienceId: audienceId,
+          });
+          
+          console.log(`联系人 ${email} 已存在，正在更新状态...`);
+          
+          // 联系人存在，更新状态为未退订
+          await resend.contacts.update({
+            email: email,
+            unsubscribed: false,
+            audienceId: audienceId
+          });
+          
+          console.log(`联系人 ${email} 状态已更新为订阅中`);
+        } catch (getError) {
+          // 联系人不存在，创建新联系人
+          await resend.contacts.create({
+            email: email,
+            unsubscribed: false,
+            audienceId: audienceId,
+            // 可以添加其他可选字段，如姓名等
+          });
+          
+          console.log(`联系人 ${email} 已添加到 Audience: ${audienceId}`);
         }
+      } catch (contactError: any) {
+        console.error('管理联系人失败:', contactError);
       }
     }
 

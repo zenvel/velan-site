@@ -18,14 +18,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const audienceId = process.env.RESEND_AUDIENCE_ID;
     
     if (audienceId) {
-      // 从 Audience 中移除联系人
+      // 从 Audience 中退订联系人
       try {
-        await resend.contacts.update({
-          email,
-          unsubscribed: true,
-          audienceId: audienceId,
-        });
-        console.log(`联系人 ${email} 已从 Audience 中退订`);
+        try {
+          // 先尝试获取联系人信息，确认存在
+          await resend.contacts.get({
+            email: email,
+            audienceId: audienceId,
+          });
+          
+          // 联系人存在，更新状态为已退订
+          await resend.contacts.update({
+            email: email,
+            unsubscribed: true,
+            audienceId: audienceId,
+          });
+          
+          console.log(`联系人 ${email} 已从 Audience 中退订`);
+        } catch (getError) {
+          console.error(`联系人 ${email} 不存在，无需退订`);
+        }
       } catch (contactError: any) {
         console.error('退订失败:', contactError);
         return res.status(500).json({ error: '退订失败，请稍后重试' });
