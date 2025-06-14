@@ -22,6 +22,8 @@ export default async function BlogDetailPage({ params }: BlogParams) {
   const { slug, locale } = await params;
   
   try {
+    console.log(`开始获取博客文章详情，slug: ${slug}, 语言: ${locale}`);
+    
     // 获取翻译文本
     const t = await getTranslations({ 
       locale, 
@@ -30,11 +32,18 @@ export default async function BlogDetailPage({ params }: BlogParams) {
     
     // 直接使用传入的slug，无需额外处理
     let cleanSlug = slug;
+    console.log(`处理后的slug: ${cleanSlug}`);
   
     // 获取文章
     const post = await getPost(cleanSlug, locale);
+    
+    console.log(`获取文章结果: ${post ? '成功' : '失败'}`);
+    if (post) {
+      console.log(`文章标题: ${post.title}, ID: ${post.articleID}`);
+    }
   
     if (!post) {
+      console.log(`未找到文章，将返回404页面`);
       notFound();
     }
 

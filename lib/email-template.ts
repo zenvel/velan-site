@@ -18,6 +18,9 @@ interface NewsletterData {
 }
 
 export function generateNewsletterHTML(data: NewsletterData): string {
+  // 检查article2是否有效（所有字段都不为空）
+  const hasArticle2 = data.article2 && data.article2.title && data.article2.summary && data.article2.slug;
+  
   // 替换所有占位符
   let content = data.contentTpl
     .replace(/\{\{issue_no\}\}/g, String(data.issueNo))
@@ -26,11 +29,31 @@ export function generateNewsletterHTML(data: NewsletterData): string {
     .replace(/\{\{article1_title\}\}/g, data.article1.title)
     .replace(/\{\{article1_summary\}\}/g, data.article1.summary)
     .replace(/\{\{article1_slug\}\}/g, data.article1.slug)
-    .replace(/\{\{article1_link\}\}/g, `https://velan.zenvel.io/zh/blog/${data.article1.slug}`)
-    .replace(/\{\{article2_title\}\}/g, data.article2.title)
-    .replace(/\{\{article2_summary\}\}/g, data.article2.summary)
-    .replace(/\{\{article2_slug\}\}/g, data.article2.slug)
-    .replace(/\{\{article2_link\}\}/g, `https://velan.zenvel.io/zh/blog/${data.article2.slug}`);
+    .replace(/\{\{article1_link\}\}/g, `https://velan.zenvel.io/zh/blog/${data.article1.slug}`);
+  
+  // 只有当article2有效时，才替换相关占位符
+  if (hasArticle2) {
+    content = content
+      .replace(/\{\{article2_title\}\}/g, data.article2.title)
+      .replace(/\{\{article2_summary\}\}/g, data.article2.summary)
+      .replace(/\{\{article2_slug\}\}/g, data.article2.slug)
+      .replace(/\{\{article2_link\}\}/g, `https://velan.zenvel.io/zh/blog/${data.article2.slug}`);
+  } else {
+    // 如果article2无效，移除所有相关的占位符及其所在的段落或区块
+    // 假设占位符在单独的段落或区块中
+    content = content
+      .replace(/(\n|^).*\{\{article2_title\}\}.*(\n|$)/g, '\n')
+      .replace(/(\n|^).*\{\{article2_summary\}\}.*(\n|$)/g, '\n')
+      .replace(/(\n|^).*\{\{article2_slug\}\}.*(\n|$)/g, '\n')
+      .replace(/(\n|^).*\{\{article2_link\}\}.*(\n|$)/g, '\n');
+    
+    // 移除可能剩余的占位符
+    content = content
+      .replace(/\{\{article2_title\}\}/g, '')
+      .replace(/\{\{article2_summary\}\}/g, '')
+      .replace(/\{\{article2_slug\}\}/g, '')
+      .replace(/\{\{article2_link\}\}/g, '');
+  }
 
   // 转换Markdown为HTML
   const markdownHTML = marked(content);

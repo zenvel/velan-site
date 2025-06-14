@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import NotionRenderer from './NotionRenderer';
 
 // 添加基本的 Notion 类型定义
 export interface RichText {
@@ -246,16 +247,22 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
   
   // 处理子块
   const renderChildren = () => {
-    if (block.children && block.children.length > 0) {
-      return (
-        <div className="pl-4 mt-2 border-l border-gray-200">
-          {block.children.map((child) => (
-            <NotionBlock key={child.id} block={child} level={level + 1} />
-          ))}
-        </div>
-      );
+    if (!block.children || block.children.length === 0) {
+      return null;
     }
-    return null;
+    
+    // 对于列表项，我们在各自的case中处理子元素，这里不再处理
+    if (block.type === 'bulleted_list_item' || block.type === 'numbered_list_item') {
+      return null;
+    }
+    
+    return (
+      <div className="pl-4 mt-2 border-l border-gray-200">
+        {block.children.map((child) => (
+          <NotionBlock key={child.id} block={child} level={level + 1} />
+        ))}
+      </div>
+    );
   };
 
   // 渲染富文本块的助手函数
@@ -311,7 +318,42 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <li className="mb-2">
           {renderRichText('bulleted_list_item')}
-          {renderChildren()}
+          {block.has_children && block.children && block.children.length > 0 && (
+            <div className="pl-4 mt-2 border-l border-gray-200">
+              {/* 将嵌套的列表项分组处理 */}
+              {(() => {
+                // 提取嵌套的列表项
+                const nestedBulletedItems = block.children.filter(child => child.type === 'bulleted_list_item');
+                const nestedNumberedItems = block.children.filter(child => child.type === 'numbered_list_item');
+                const otherItems = block.children.filter(child => 
+                  child.type !== 'bulleted_list_item' && child.type !== 'numbered_list_item'
+                );
+                
+                return (
+                  <>
+                    {/* 渲染嵌套的无序列表 */}
+                    {nestedBulletedItems.length > 0 && (
+                      <ul className="list-disc pl-4 my-2">
+                        <NotionRenderer blocks={nestedBulletedItems} isNestedList={true} />
+                      </ul>
+                    )}
+                    
+                    {/* 渲染嵌套的有序列表 */}
+                    {nestedNumberedItems.length > 0 && (
+                      <ol className="list-decimal pl-4 my-2">
+                        <NotionRenderer blocks={nestedNumberedItems} isNestedList={true} />
+                      </ol>
+                    )}
+                    
+                    {/* 渲染其他非列表项 */}
+                    {otherItems.map(child => (
+                      <NotionBlock key={child.id} block={child} level={level + 1} />
+                    ))}
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </li>
       );
     
@@ -319,7 +361,42 @@ const NotionBlock = ({ block, level = 0 }: BlockProps) => {
       return (
         <li className="mb-2">
           {renderRichText('numbered_list_item')}
-          {renderChildren()}
+          {block.has_children && block.children && block.children.length > 0 && (
+            <div className="pl-4 mt-2 border-l border-gray-200">
+              {/* 将嵌套的列表项分组处理 */}
+              {(() => {
+                // 提取嵌套的列表项
+                const nestedBulletedItems = block.children.filter(child => child.type === 'bulleted_list_item');
+                const nestedNumberedItems = block.children.filter(child => child.type === 'numbered_list_item');
+                const otherItems = block.children.filter(child => 
+                  child.type !== 'bulleted_list_item' && child.type !== 'numbered_list_item'
+                );
+                
+                return (
+                  <>
+                    {/* 渲染嵌套的无序列表 */}
+                    {nestedBulletedItems.length > 0 && (
+                      <ul className="list-disc pl-4 my-2">
+                        <NotionRenderer blocks={nestedBulletedItems} isNestedList={true} />
+                      </ul>
+                    )}
+                    
+                    {/* 渲染嵌套的有序列表 */}
+                    {nestedNumberedItems.length > 0 && (
+                      <ol className="list-decimal pl-4 my-2">
+                        <NotionRenderer blocks={nestedNumberedItems} isNestedList={true} />
+                      </ol>
+                    )}
+                    
+                    {/* 渲染其他非列表项 */}
+                    {otherItems.map(child => (
+                      <NotionBlock key={child.id} block={child} level={level + 1} />
+                    ))}
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </li>
       );
     

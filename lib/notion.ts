@@ -18,6 +18,10 @@ const newsletterNotion = new Client({
 const ARTICLES_DB   = process.env.NOTION_ARTICLES_DB_ID!
 const LOCALES_DB    = process.env.NOTION_LOCALES_DB_ID!
 
+// 添加缓存机制
+const CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存过期时间
+const postsCache = new Map<string, { data: JoinedPost[], timestamp: number }>();
+
 // 带重试机制的API包装函数
 async function notionApiWithRetry<T>(
   operation: () => Promise<T>,
@@ -321,9 +325,33 @@ function getPageTitle(page: any, defaultTitle: string = "无标题"): string {
   }
 }
 
+// 生成Slug的辅助函数
+function generateSlug(title: string): string {
+  if (!title) return '';
+  
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // 移除特殊字符
+    .replace(/\s+/g, '-')     // 空格替换为连字符
+    .replace(/-+/g, '-')      // 多个连字符替换为单个
+    .trim();                   // 移除首尾空格
+}
+
 // ② 获取多条
 export async function getPosts(lang: string): Promise<JoinedPost[]> {
   try {
+    // 检查缓存
+    const cacheKey = `posts_${lang}`;
+    const cachedData = postsCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cachedData && (now - cachedData.timestamp) < CACHE_TTL) {
+      console.log(`使用缓存的文章数据，语言: ${lang}`);
+      return cachedData.data;
+    }
+    
+    console.log(`从Notion获取文章数据，语言: ${lang}`);
+    
     // 获取所有文章
     const articles = await notionApiWithRetry(
       () => articlesNotion.databases.query({
@@ -337,55 +365,6 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
       return [];
     }
 
-    // 获取文章ID列表
-    const ids = articles.results.map((p, index) => {
-      try {
-        let id;
-        const properties = (p as any).properties;
-        
-        if (properties?.Article_ID) {
-          const prop = properties.Article_ID;
-          if (prop.type === 'number') {
-            id = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            id = parseInt(prop.rich_text[0].plain_text, 10);
-          } else if (prop.type === 'title' && prop.title?.length > 0) {
-            id = parseInt(prop.title[0].plain_text, 10);
-          }
-        }
-        
-        if (!id && properties?.ArticleID) {
-          const prop = properties.ArticleID;
-          if (prop.type === 'number') {
-            id = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            id = parseInt(prop.rich_text[0].plain_text, 10);
-          } else if (prop.type === 'title' && prop.title?.length > 0) {
-            id = parseInt(prop.title[0].plain_text, 10);
-          }
-        }
-        
-        if (!id && properties?.ID) {
-          const prop = properties.ID;
-          if (prop.type === 'number') {
-            id = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            id = parseInt(prop.rich_text[0].plain_text, 10);
-          } else if (prop.type === 'title' && prop.title?.length > 0) {
-            id = parseInt(prop.title[0].plain_text, 10);
-          }
-        }
-        
-        if (!id || isNaN(id)) {
-          id = index + 1;
-        }
-        
-        return id;
-      } catch (e) {
-        return index + 1;
-      }
-    }).filter(Boolean);
-
     // 获取所有语言版本数据
     const locales = await notionApiWithRetry(
       () => articlesNotion.databases.query({
@@ -394,53 +373,71 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
       '获取Locales列表'
     );
 
-    // 过滤符合条件的数据
-    const localeMap = new Map<number, any[]>();
+    // 建立更高效的映射关系
+    const articlesById = new Map<number, {id: string, properties: any, articleId: number}>();
+    const localesByArticleId = new Map<number, Map<string, any>>();
     
-    // 将 Locale 条目按照 Article_ID 分组
-    locales.results.forEach((l, index) => {
+    // 处理文章数据
+    articles.results.forEach((article, index) => {
       try {
-        let articleId;
-        const properties = (l as any).properties;
+        const properties = (article as any).properties;
+        let articleId: number;
         
+        // 尝试从Article_ID获取ID
         if (properties?.Article_ID) {
           const prop = properties.Article_ID;
-          
-          if (prop.type === 'relation' && Array.isArray(prop.relation) && prop.relation.length > 0) {
-            const relatedPageId = prop.relation[0].id;
-            const relatedArticle = articles.results.find(a => a.id === relatedPageId);
-            if (relatedArticle) {
-              const titleProp = (relatedArticle as any).properties.Article_ID;
-              if (titleProp?.type === 'title' && titleProp.title?.length > 0) {
-                const titleText = titleProp.title[0]?.plain_text;
-                if (titleText) {
-                  articleId = parseInt(titleText, 10);
-                }
-              }
-            }
-          } else if (prop.type === 'number') {
-            articleId = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            articleId = parseInt(prop.rich_text[0].plain_text, 10);
-          } else if (prop.type === 'title' && prop.title?.length > 0) {
-            articleId = parseInt(prop.title[0].plain_text, 10);
-          }
-        }
-        
-        if (!articleId && properties?.ArticleID) {
-          const prop = properties.ArticleID;
           if (prop.type === 'number') {
             articleId = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            articleId = parseInt(prop.rich_text[0].plain_text, 10);
           } else if (prop.type === 'title' && prop.title?.length > 0) {
             articleId = parseInt(prop.title[0].plain_text, 10);
+          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
+            articleId = parseInt(prop.rich_text[0].plain_text, 10);
           }
         }
         
+        // 如果没有找到ID，使用索引+1作为ID
+        if (!articleId || isNaN(articleId)) {
+          articleId = index + 1;
+        }
+        
+        // 存储文章信息
+        articlesById.set(articleId, {
+          id: article.id,
+          properties,
+          articleId
+        });
+      } catch (error) {
+        console.warn(`处理文章时出错:`, error);
+      }
+    });
+    
+    // 处理语言版本数据
+    locales.results.forEach(locale => {
+      try {
+        const properties = (locale as any).properties;
+        let articleId: number | undefined;
+        const localeLang = safeGetSelect(locale, "Lang", "en");
+        
+        // 尝试从关系字段获取文章ID
+        if (properties?.Article_ID?.type === 'relation' && properties.Article_ID.relation?.length > 0) {
+          const relatedPageId = properties.Article_ID.relation[0].id;
+          
+          // 查找对应的文章
+          for (const [id, article] of articlesById.entries()) {
+            if (article.id === relatedPageId) {
+              articleId = id;
+              break;
+            }
+          }
+        } 
+        
+        // 尝试从其他字段获取文章ID
         if (!articleId) {
-          const title = safeGetProperty(l, "Title", "title");
-          if (title) {
+          if (properties?.Article_ID?.type === 'number') {
+            articleId = properties.Article_ID.number;
+          } else {
+            // 尝试从标题中提取ID
+            const title = safeGetProperty(locale, "Title", "title");
             const match = title.match(/^(\d+)/);
             if (match && match[1]) {
               articleId = parseInt(match[1], 10);
@@ -449,135 +446,10 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
         }
         
         if (!articleId || isNaN(articleId)) {
-          const localeTitle = safeGetProperty(l, "Title", "title");
-          if (localeTitle) {
-            for (const article of articles.results) {
-              const articleTitle = safeGetProperty(article, "Title", "rich_text");
-              if (articleTitle && (
-                  articleTitle.includes(localeTitle) || 
-                  localeTitle.includes(articleTitle) ||
-                  (articleTitle.length > 10 && localeTitle.length > 10 && 
-                   (articleTitle.substring(0, 10) === localeTitle.substring(0, 10)))
-              )) {
-                const artId = articles.results.indexOf(article) + 1;
-                articleId = artId;
-                break;
-              }
-            }
-          }
-          
-          if (!articleId || isNaN(articleId)) {
-            articleId = index + 1;
-          }
+          return; // 跳过无法确定文章ID的条目
         }
         
-        const localeLang = safeGetSelect(l, "Lang");
-        
-        if (!localeMap.has(articleId)) {
-          localeMap.set(articleId, []);
-        }
-        localeMap.get(articleId)?.push({
-          entry: l,
-          lang: localeLang
-        });
-      } catch (e) {
-        console.warn(`处理 Locale 条目时出错: ${e}`);
-      }
-    });
-    
-    // 选择匹配当前语言的条目
-    const filteredLocales = [];
-    for (const articleId of ids) {
-      const entries = localeMap.get(articleId) || [];
-      
-      const matchingEntry = entries.find(e => e.lang === lang);
-      if (matchingEntry) {
-        filteredLocales.push(matchingEntry.entry);
-      } else {
-        const englishEntry = entries.find(e => e.lang === 'en');
-        if (englishEntry) {
-          filteredLocales.push(englishEntry.entry);
-        } else if (entries.length > 0) {
-          filteredLocales.push(entries[0].entry);
-        }
-      }
-    }
-
-    // 建立 Map 以 articleID 为 key
-    const map = new Map<number, LocaleRow>();
-    
-    filteredLocales.forEach(l => {
-      try {
-        let articleId;
-        const properties = (l as any).properties;
-        
-        if (properties?.Article_ID) {
-          const prop = properties.Article_ID;
-          
-          if (prop.type === 'relation' && Array.isArray(prop.relation) && prop.relation.length > 0) {
-            const relatedPageId = prop.relation[0].id;
-            const relatedArticle = articles.results.find(a => a.id === relatedPageId);
-            if (relatedArticle) {
-              const titleProp = (relatedArticle as any).properties.Article_ID;
-              if (titleProp?.type === 'title' && titleProp.title?.length > 0) {
-                const titleText = titleProp.title[0]?.plain_text;
-                if (titleText) {
-                  articleId = parseInt(titleText, 10);
-                }
-              }
-            }
-          } else if (prop.type === 'number') {
-            articleId = prop.number;
-          } else if (prop.type === 'rich_text' && prop.rich_text?.length > 0) {
-            articleId = parseInt(prop.rich_text[0].plain_text, 10);
-          } else if (prop.type === 'title' && prop.title?.length > 0) {
-            articleId = parseInt(prop.title[0].plain_text, 10);
-          }
-        }
-        
-        if (!articleId) {
-          const title = safeGetProperty(l, "Title", "title");
-          if (title) {
-            const match = title.match(/^(\d+)/);
-            if (match && match[1]) {
-              articleId = parseInt(match[1], 10);
-            }
-          }
-        }
-        
-        if (!articleId) {
-          const index = filteredLocales.findIndex(item => item.id === l.id);
-          if (index !== -1) {
-            articleId = index + 1;
-          } else {
-            return;
-          }
-        }
-        
-        const localeLang = safeGetSelect(l, "Lang", "en");
-        
-        let title;
-        if (properties?.Title?.type === 'title' && Array.isArray(properties.Title.title) && properties.Title.title.length > 0) {
-          title = properties.Title.title[0]?.plain_text;
-        }
-        
-        if (!title) {
-          for (const key in properties || {}) {
-            const prop = properties[key];
-            if (prop.type === "title" && prop.title && Array.isArray(prop.title) && prop.title.length > 0) {
-              title = prop.title[0]?.plain_text;
-              if (title) break;
-            } else if (prop.type === "rich_text" && prop.rich_text && Array.isArray(prop.rich_text) && prop.rich_text.length > 0) {
-              title = prop.rich_text[0]?.plain_text;
-              if (title) break;
-            }
-          }
-        }
-        
-        if (!title) {
-          title = getArticleTitleFromMapping(localeLang, articleId) || `文章 #${articleId}`;
-        }
-        
+        // 获取Slug
         let slug = '';
         if (properties?.Slug?.type === 'formula' && properties.Slug.formula?.string) {
           slug = properties.Slug.formula.string;
@@ -587,103 +459,90 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
           slug = properties.Slug.rich_text[0].plain_text;
         }
         
+        // 如果没有Slug，尝试从标题生成
         if (!slug) {
-          console.warn(`⚠️ 文章 Article_ID=${articleId} 缺少Slug字段，跳过`);
-          return;
+          const title = safeGetProperty(locale, "Title", "title");
+          if (title) {
+            slug = generateSlug(title);
+            console.log(`为文章 ${articleId} 自动生成Slug: ${slug}`);
+          }
         }
         
+        // 如果仍然没有Slug，使用文章ID作为Slug
+        if (!slug) {
+          slug = `article-${articleId}`;
+          console.log(`为文章 ${articleId} 使用默认Slug: ${slug}`);
+        }
+        
+        // 获取标题
+        let title = safeGetProperty(locale, "Title", "title");
+        if (!title) {
+          title = getArticleTitleFromMapping(localeLang, articleId) || `文章 #${articleId}`;
+        }
+        
+        // 获取摘要
         const summary = properties?.Summary?.rich_text?.[0]?.plain_text || 
-                        safeGetProperty(l, "Summary", "rich_text") || "";
+                       safeGetProperty(locale, "Summary", "rich_text") || "";
         
-        const tags = safeGetTags(l);
+        // 获取标签
+        const tags = safeGetTags(locale);
         
-        map.set(
-          articleId,
-          {
-            id:        l.id,
-            articleID: articleId,
-            lang:      localeLang as "en" | "zh" | "es",
-            title:     title,
+        // 存储语言版本信息
+        if (!localesByArticleId.has(articleId)) {
+          localesByArticleId.set(articleId, new Map());
+        }
+        
+        const localeMap = localesByArticleId.get(articleId);
+        if (localeMap) {
+          localeMap.set(localeLang, {
+            id: locale.id,
+            title,
             slug,
             summary,
             tags,
-            localePageId: l.id
-          }
-        );
+            localePageId: locale.id
+          });
+        }
       } catch (error) {
-        console.warn(`❌ 处理 Locale 时出错: ${error}`);
+        console.warn(`处理语言版本时出错:`, error);
       }
     });
-
-    // merge 文章和语言信息
+    
+    // 合并数据并生成结果
     const joined: JoinedPost[] = [];
     
-    for (const a of articles.results) {
+    for (const [articleId, article] of articlesById.entries()) {
       try {
-        const properties = (a as any).properties;
-        if (!properties) continue;
+        const properties = article.properties;
         
-        let aid;
-        if (properties.Article_ID?.type === 'title') {
-          const titleArr = properties.Article_ID.title;
-          if (Array.isArray(titleArr) && titleArr.length > 0 && titleArr[0]?.plain_text) {
-            aid = parseInt(titleArr[0].plain_text, 10);
-          }
-        }
+        // 检查文章是否已发布
+        const status = properties.Status?.select?.name || '';
+        const publish = status === 'Published';
         
-        if (!aid || isNaN(aid)) {
-          const index = articles.results.indexOf(a);
-          aid = index + 1;
-        }
+        if (!publish) continue;
         
-        let locale = map.get(aid);
+        // 获取封面图URL
+        const coverFiles = properties.Cover?.files || [];
+        const coverUrl = coverFiles[0]?.file?.url || coverFiles[0]?.external?.url || '';
         
-        if (!locale) {
-          const articleTitle = properties.Title?.rich_text?.[0]?.plain_text || '';
+        // 获取发布日期
+        const date = properties.Date?.date?.start || new Date().toISOString().split('T')[0];
+        
+        // 获取当前语言的版本，如果没有则尝试获取英文版本，如果还没有则获取任意版本
+        const localeVersions = localesByArticleId.get(articleId);
+        let localeData: any = null;
+        
+        if (localeVersions) {
+          localeData = localeVersions.get(lang) || localeVersions.get('en');
           
-          if (articleTitle) {
-            for (const l of locales.results) {
-              const localeProps = (l as any).properties;
-              const localeTitle = localeProps.Title?.title?.[0]?.plain_text || '';
-              const localeLang = safeGetSelect(l, "Lang", "");
-              
-              if (localeLang === lang && 
-                  (localeTitle.includes(articleTitle) || articleTitle.includes(localeTitle))) {
-                let matchSlug = '';
-                if (localeProps.Slug?.type === 'formula' && localeProps.Slug.formula?.string) {
-                  matchSlug = localeProps.Slug.formula.string;
-                } else if (localeProps.Slug_Manual?.rich_text?.[0]?.plain_text) {
-                  matchSlug = localeProps.Slug_Manual.rich_text[0].plain_text;
-                } else if (localeProps.Slug?.rich_text?.[0]?.plain_text) {
-                  matchSlug = localeProps.Slug.rich_text[0].plain_text;
-                }
-                
-                if (!matchSlug) {
-                  console.warn(`⚠️ 匹配的Locale条目缺少Slug字段`);
-                  break;
-                }
-                
-                locale = {
-                  id: l.id,
-                  articleID: aid,
-                  lang: lang as "en" | "zh" | "es",
-                  title: localeTitle || articleTitle,
-                  slug: matchSlug,
-                  summary: localeProps.Summary?.rich_text?.[0]?.plain_text || "",
-                  tags: safeGetTags(l),
-                  localePageId: l.id
-                };
-                break;
-              }
-            }
-          }
-          
-          if (!locale) {
-            locale = await getLocaleByArticle(aid, "en");
+          if (!localeData && localeVersions.size > 0) {
+            localeData = Array.from(localeVersions.values())[0];
           }
         }
         
-        if (!locale) {
+        // 如果没有找到语言版本，使用默认数据
+        if (!localeData) {
+          // 获取标题
           let title = '';
           if (properties.Title?.rich_text?.[0]?.plain_text) {
             title = properties.Title.rich_text[0].plain_text;
@@ -700,54 +559,54 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
             }
             
             if (!title) {
-              title = `文章 #${aid}`;
+              title = `文章 #${articleId}`;
             }
           }
           
-          let fallbackSlug = '';
+          // 获取或生成Slug
+          let slug = '';
           if (properties.Slug_Manual?.rich_text?.[0]?.plain_text) {
-            fallbackSlug = properties.Slug_Manual.rich_text[0].plain_text;
+            slug = properties.Slug_Manual.rich_text[0].plain_text;
           }
           
-          if (!fallbackSlug) {
-            console.warn(`⚠️ 文章 ${aid} 缺少Slug，跳过`);
-            continue;
+          if (!slug && title) {
+            slug = generateSlug(title);
           }
           
-          locale = {
-            id: a.id,
-            articleID: aid,
-            lang: lang as "en" | "zh" | "es",
-            title: title,
-            slug: fallbackSlug,
+          if (!slug) {
+            slug = `article-${articleId}`;
+          }
+          
+          localeData = {
+            id: article.id,
+            title,
+            slug,
             summary: "",
             tags: [],
-            localePageId: a.id
+            localePageId: article.id
           };
         }
         
-        const coverFiles = properties.Cover?.files || [];
-        const coverUrl = coverFiles[0]?.file?.url || coverFiles[0]?.external?.url || '';
-        
-        const date = properties.Date?.date?.start || new Date().toISOString().split('T')[0];
-        
-        const status = properties.Status?.select?.name || '';
-        const publish = status === 'Published';
-        
-        if (publish) {
-          joined.push({
-            id:        a.id,
-            articleID: aid,
-            date:      date,
-            coverUrl:  coverUrl,
-            publish:   true,
-            ...locale
-          });
-        }
+        // 添加到结果中
+        joined.push({
+          id: article.id,
+          articleID: articleId,
+          date,
+          coverUrl,
+          publish: true,
+          lang: lang as "en" | "zh" | "es",
+          ...localeData
+        });
       } catch (error) {
-        console.warn(`❌ 处理文章时出错: ${error}`);
+        console.warn(`合并文章数据时出错:`, error);
       }
     }
+    
+    // 更新缓存
+    postsCache.set(cacheKey, {
+      data: joined,
+      timestamp: now
+    });
     
     return joined;
   } catch (error) {
@@ -773,7 +632,20 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
 export async function getPost(slug: string, lang: string): Promise<JoinedPost | null> {
   try {
     if (!slug || !lang) {
+      console.log(`getPost: 参数无效，slug: ${slug}, lang: ${lang}`);
       return null;
+    }
+    
+    console.log(`getPost: 开始获取文章，slug: ${slug}, lang: ${lang}`);
+    
+    // 检查缓存
+    const cacheKey = `post_${lang}_${slug}`;
+    const cachedData = postsCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cachedData && (now - cachedData.timestamp) < CACHE_TTL) {
+      console.log(`getPost: 使用缓存的文章数据，slug: ${slug}, lang: ${lang}`);
+      return cachedData.data as JoinedPost;
     }
     
     // 先获取所有 Locale 条目（使用重试机制）
@@ -784,7 +656,11 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
       '获取Locale条目'
     );
     
-
+    console.log(`getPost: 获取到 ${localePages.results.length} 个Locale条目`);
+    
+    // 规范化slug进行比较
+    const normalizeSlug = (s: string) => s.toLowerCase().trim();
+    const normalizedTargetSlug = normalizeSlug(slug);
     
     // 找出匹配的 Locale
     const matchingLocale = localePages.results.find(page => {
@@ -807,101 +683,194 @@ export async function getPost(slug: string, lang: string): Promise<JoinedPost | 
         
         const pageLang = safeGetSelect(page, "Lang");
         
-        // 直接使用从数据库获取的slug
-        let cleanPageSlug = pageSlug;
+        // 规范化比较
+        const normalizedPageSlug = normalizeSlug(pageSlug);
         
-        return cleanPageSlug === slug && pageLang === lang;
+        return normalizedPageSlug === normalizedTargetSlug && pageLang === lang;
       } catch (e) {
         return false;
       }
     });
     
-    if (!matchingLocale) {
-      // 尝试找到任意语言的匹配slug
-      const anyLangMatch = localePages.results.find(page => {
-        try {
-          const properties = (page as any).properties;
-          let pageSlug = '';
-          
-          if (properties.Slug?.type === 'formula' && properties.Slug.formula?.string) {
-            pageSlug = properties.Slug.formula.string;
-          } else if (properties.Slug_Manual?.rich_text?.[0]?.plain_text) {
-            pageSlug = properties.Slug_Manual.rich_text[0].plain_text;
-          } else {
-            pageSlug = safeGetProperty(page, "Slug", "rich_text");
-          }
-          
-          let cleanPageSlug = pageSlug;
-          return cleanPageSlug === slug;
-        } catch (e) {
-          return false;
-        }
-      });
+    if (matchingLocale) {
+      console.log(`getPost: 找到完全匹配的Locale条目，ID: ${matchingLocale.id}`);
+      const result = await processArticleLocale(matchingLocale);
       
-      if (anyLangMatch) {
-        try {
-          let relatedArticleId = null;
-          
-          const relationProperty = (anyLangMatch as any).properties.Article_ID;
-          if (relationProperty?.type === 'relation' && relationProperty.relation?.length > 0) {
-            relatedArticleId = relationProperty.relation[0].id;
-            
-            const articlesResponse = await notionApiWithRetry(
-              () => articlesNotion.databases.query({
-                database_id: ARTICLES_DB,
-                page_size: 100
-              }),
-              '获取Articles条目'
-            );
-            
-            const matchedArticle = articlesResponse.results.find(a => a.id === relatedArticleId);
-            
-            if (matchedArticle) {
-              const langMatch = localePages.results.find(page => {
-                try {
-                  const pageRelation = (page as any).properties.Article_ID;
-                  if (pageRelation?.type === 'relation' && pageRelation.relation?.length > 0) {
-                    const pageRelatedId = pageRelation.relation[0].id;
-                    const pageLang = safeGetSelect(page, "Lang");
-                    return pageRelatedId === relatedArticleId && pageLang === lang;
-                  }
-                  return false;
-                } catch (e) {
-                  return false;
-                }
-              });
-              
-              if (langMatch) {
-                return await processArticleLocale(langMatch);
-              }
-            }
-          } else {
-            const aid = (anyLangMatch as any).properties.Article_ID?.number;
-            
-            if (aid) {
-              const langMatch = localePages.results.find(page => {
-                try {
-                  const pageArticleId = (page as any).properties.Article_ID?.number;
-                  const pageLang = safeGetSelect(page, "Lang");
-                  return pageArticleId === aid && pageLang === lang;
-                } catch (e) {
-                  return false;
-                }
-              });
-              
-              if (langMatch) {
-                return await processArticleLocale(langMatch);
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`查找关联文章时出错:`, error);
-        }
+      // 更新缓存
+      if (result) {
+        postsCache.set(cacheKey, {
+          data: result,
+          timestamp: now
+        });
       }
       
-      return null;
+      return result;
     }
-    return await processArticleLocale(matchingLocale);
+    
+    console.log(`getPost: 未找到完全匹配的Locale条目，尝试其他匹配方式`);
+    
+    // 尝试找到任意语言的匹配slug
+    const anyLangMatch = localePages.results.find(page => {
+      try {
+        const properties = (page as any).properties;
+        let pageSlug = '';
+        
+        if (properties.Slug?.type === 'formula' && properties.Slug.formula?.string) {
+          pageSlug = properties.Slug.formula.string;
+        } else if (properties.Slug_Manual?.rich_text?.[0]?.plain_text) {
+          pageSlug = properties.Slug_Manual.rich_text[0].plain_text;
+        } else {
+          pageSlug = safeGetProperty(page, "Slug", "rich_text");
+        }
+        
+        return normalizeSlug(pageSlug) === normalizedTargetSlug;
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    if (anyLangMatch) {
+      console.log(`getPost: 找到其他语言的匹配条目，ID: ${anyLangMatch.id}`);
+      
+      try {
+        let relatedArticleId = null;
+        
+        const relationProperty = (anyLangMatch as any).properties.Article_ID;
+        if (relationProperty?.type === 'relation' && relationProperty.relation?.length > 0) {
+          relatedArticleId = relationProperty.relation[0].id;
+          
+          const articlesResponse = await notionApiWithRetry(
+            () => articlesNotion.databases.query({
+              database_id: ARTICLES_DB,
+              page_size: 100
+            }),
+            '获取Articles条目'
+          );
+          
+          const matchedArticle = articlesResponse.results.find(a => a.id === relatedArticleId);
+          
+          if (matchedArticle) {
+            const langMatch = localePages.results.find(page => {
+              try {
+                const pageRelation = (page as any).properties.Article_ID;
+                if (pageRelation?.type === 'relation' && pageRelation.relation?.length > 0) {
+                  const pageRelatedId = pageRelation.relation[0].id;
+                  const pageLang = safeGetSelect(page, "Lang");
+                  return pageRelatedId === relatedArticleId && pageLang === lang;
+                }
+                return false;
+              } catch (e) {
+                return false;
+              }
+            });
+            
+            if (langMatch) {
+              console.log(`getPost: 找到目标语言的关联条目，ID: ${langMatch.id}`);
+              const result = await processArticleLocale(langMatch);
+              
+              // 更新缓存
+              if (result) {
+                postsCache.set(cacheKey, {
+                  data: result,
+                  timestamp: now
+                });
+              }
+              
+              return result;
+            }
+          }
+        } else {
+          const aid = (anyLangMatch as any).properties.Article_ID?.number;
+          
+          if (aid) {
+            const langMatch = localePages.results.find(page => {
+              try {
+                const pageArticleId = (page as any).properties.Article_ID?.number;
+                const pageLang = safeGetSelect(page, "Lang");
+                return pageArticleId === aid && pageLang === lang;
+              } catch (e) {
+                return false;
+              }
+            });
+            
+            if (langMatch) {
+              console.log(`getPost: 找到目标语言的数字ID关联条目，ID: ${langMatch.id}`);
+              const result = await processArticleLocale(langMatch);
+              
+              // 更新缓存
+              if (result) {
+                postsCache.set(cacheKey, {
+                  data: result,
+                  timestamp: now
+                });
+              }
+              
+              return result;
+            }
+          }
+        }
+        
+        // 如果找不到目标语言版本，直接使用找到的任意语言版本
+        console.log(`getPost: 未找到目标语言版本，使用其他语言版本，ID: ${anyLangMatch.id}`);
+        const result = await processArticleLocale(anyLangMatch);
+        
+        // 更新缓存
+        if (result) {
+          postsCache.set(cacheKey, {
+            data: result,
+            timestamp: now
+          });
+        }
+        
+        return result;
+      } catch (error) {
+        console.error(`查找关联文章时出错:`, error);
+      }
+    }
+    
+    // 尝试部分匹配
+    console.log(`getPost: 尝试部分匹配`);
+    const partialMatches = localePages.results.filter(page => {
+      try {
+        const properties = (page as any).properties;
+        let pageSlug = '';
+        
+        if (properties.Slug?.type === 'formula' && properties.Slug.formula?.string) {
+          pageSlug = properties.Slug.formula.string;
+        } else if (properties.Slug_Manual?.rich_text?.[0]?.plain_text) {
+          pageSlug = properties.Slug_Manual.rich_text[0].plain_text;
+        } else {
+          pageSlug = safeGetProperty(page, "Slug", "rich_text");
+        }
+        
+        const normalizedPageSlug = normalizeSlug(pageSlug);
+        
+        // 部分匹配
+        return (normalizedPageSlug.includes(normalizedTargetSlug) || 
+                normalizedTargetSlug.includes(normalizedPageSlug)) &&
+               safeGetSelect(page, "Lang") === lang;
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    if (partialMatches.length > 0) {
+      console.log(`getPost: 找到 ${partialMatches.length} 个部分匹配`);
+      const result = await processArticleLocale(partialMatches[0]);
+      
+      // 更新缓存
+      if (result) {
+        postsCache.set(cacheKey, {
+          data: result,
+          timestamp: now
+        });
+      }
+      
+      return result;
+    }
+    
+    console.log(`getPost: 未找到任何匹配的文章，slug: ${slug}, lang: ${lang}`);
+    return null;
   } catch (error) {
     console.error(`获取文章详情失败 (slug: ${slug}, lang: ${lang}):`, error);
     return null;
@@ -1367,22 +1336,21 @@ export async function fetchIssueById(id: string) {
       summary: article1_summary ? getFormula(article1_summary) : hardcodedArticle1.summary,
       slug: article1_slug ? getFormula(article1_slug) : hardcodedArticle1.slug,
     };
-    
+
+    // 对于article2，只有当数据库中确实有相关字段时才使用数据
     const article2 = {
-      title: article2_title ? getFormula(article2_title) : hardcodedArticle2.title,
-      summary: article2_summary ? getFormula(article2_summary) : hardcodedArticle2.summary,
-      slug: article2_slug ? getFormula(article2_slug) : hardcodedArticle2.slug,
+      title: article2_title ? getFormula(article2_title) : '',
+      summary: article2_summary ? getFormula(article2_summary) : '',
+      slug: article2_slug ? getFormula(article2_slug) : '',
     };
-    
+
     // 检查文章信息是否为空，如果为空则使用硬编码数据
     if (!article1.title) article1.title = hardcodedArticle1.title;
     if (!article1.summary) article1.summary = hardcodedArticle1.summary;
     if (!article1.slug) article1.slug = hardcodedArticle1.slug;
-    
-    if (!article2.title) article2.title = hardcodedArticle2.title;
-    if (!article2.summary) article2.summary = hardcodedArticle2.summary;
-    if (!article2.slug) article2.slug = hardcodedArticle2.slug;
-    
+
+    // 对于article2，我们不再使用硬编码数据填充
+    // 如果字段为空，就让它保持为空
     console.log('最终文章1信息:', article1);
     console.log('最终文章2信息:', article2);
     
