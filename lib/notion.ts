@@ -20,7 +20,7 @@ const LOCALES_DB    = process.env.NOTION_LOCALES_DB_ID!
 
 // 添加缓存机制
 const CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存过期时间
-const postsCache = new Map<string, { data: JoinedPost[], timestamp: number }>();
+const postsCache = new Map<string, { data: JoinedPost | JoinedPost[], timestamp: number }>();
 
 // 带重试机制的API包装函数
 async function notionApiWithRetry<T>(
@@ -347,7 +347,7 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
     
     if (cachedData && (now - cachedData.timestamp) < CACHE_TTL) {
       console.log(`使用缓存的文章数据，语言: ${lang}`);
-      return cachedData.data;
+      return cachedData.data as JoinedPost[];
     }
     
     console.log(`从Notion获取文章数据，语言: ${lang}`);
@@ -417,6 +417,9 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
         const properties = (locale as any).properties;
         let articleId: number | undefined;
         const localeLang = safeGetSelect(locale, "Lang", "en");
+        
+        // 检查Publish字段是否勾选
+        const isPublished = properties?.Publish?.checkbox === true;
         
         // 尝试从关系字段获取文章ID
         if (properties?.Article_ID?.type === 'relation' && properties.Article_ID.relation?.length > 0) {
@@ -500,7 +503,8 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
             slug,
             summary,
             tags,
-            localePageId: locale.id
+            localePageId: locale.id,
+            isPublished
           });
         }
       } catch (error) {
@@ -533,58 +537,19 @@ export async function getPosts(lang: string): Promise<JoinedPost[]> {
         let localeData: any = null;
         
         if (localeVersions) {
-          localeData = localeVersions.get(lang) || localeVersions.get('en');
-          
-          if (!localeData && localeVersions.size > 0) {
-            localeData = Array.from(localeVersions.values())[0];
+          // 获取指定语言的版本，并检查其发布状态
+          const langVersion = localeVersions.get(lang);
+          if (langVersion && langVersion.isPublished) {
+            localeData = langVersion;
           }
+          
+          // 如果没有找到指定语言或未发布，不使用其他语言版本
+          // 这里不再回退到英文版本或其他版本
         }
         
-        // 如果没有找到语言版本，使用默认数据
+        // 如果没有找到已发布的当前语言版本，跳过这篇文章
         if (!localeData) {
-          // 获取标题
-          let title = '';
-          if (properties.Title?.rich_text?.[0]?.plain_text) {
-            title = properties.Title.rich_text[0].plain_text;
-          } else {
-            for (const key in properties) {
-              const prop = properties[key];
-              if ((prop.type === 'title' && prop.title?.length > 0) ||
-                  (prop.type === 'rich_text' && prop.rich_text?.length > 0)) {
-                title = prop.type === 'title' ? 
-                        prop.title[0]?.plain_text : 
-                        prop.rich_text[0]?.plain_text;
-                if (title) break;
-              }
-            }
-            
-            if (!title) {
-              title = `文章 #${articleId}`;
-            }
-          }
-          
-          // 获取或生成Slug
-          let slug = '';
-          if (properties.Slug_Manual?.rich_text?.[0]?.plain_text) {
-            slug = properties.Slug_Manual.rich_text[0].plain_text;
-          }
-          
-          if (!slug && title) {
-            slug = generateSlug(title);
-          }
-          
-          if (!slug) {
-            slug = `article-${articleId}`;
-          }
-          
-          localeData = {
-            id: article.id,
-            title,
-            slug,
-            summary: "",
-            tags: [],
-            localePageId: article.id
-          };
+          continue;
         }
         
         // 添加到结果中
