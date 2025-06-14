@@ -20,12 +20,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 获取API密钥（可选，用于保护API不被未授权访问）
+    // 验证请求来源
+    // 1. 检查是否来自Vercel Cron Job
+    const isCronJob = req.headers['x-vercel-cron'] === 'true';
+    
+    // 2. 检查API密钥（用于手动触发或其他系统集成）
     const apiKey = req.headers['x-api-key'] || req.query.api_key;
     const configuredApiKey = process.env.API_SECRET_KEY;
     
-    // 如果配置了API密钥，则进行验证
-    if (configuredApiKey && apiKey !== configuredApiKey) {
+    // 3. 如果既不是Cron Job也没有有效的API密钥，则拒绝请求
+    if (!isCronJob && configuredApiKey && apiKey !== configuredApiKey) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
