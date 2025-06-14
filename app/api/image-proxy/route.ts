@@ -18,12 +18,15 @@ export async function GET(request: NextRequest) {
     
     // 验证URL参数
     if (!imageUrl) {
+      console.error('图片代理错误: 缺少URL参数');
       return new NextResponse('Missing URL parameter', { status: 400 });
     }
     
-    // 验证URL是否为有效的图片链接
-    if (!imageUrl.includes('amazonaws.com') && !imageUrl.includes('notion.so')) {
-      return new NextResponse('Invalid image source', { status: 400 });
+    // 验证URL是否为有效的图片链接 - 放宽限制，允许所有图片源
+    // 只做基本的安全检查，确保是HTTP/HTTPS链接
+    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+      console.error(`图片代理错误: 无效的URL: ${imageUrl}`);
+      return new NextResponse('Invalid image URL', { status: 400 });
     }
     
     console.log(`图片代理请求: ${imageUrl}`);
@@ -37,16 +40,19 @@ export async function GET(request: NextRequest) {
     
     // 设置更短的超时时间
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 增加到10秒超时
     
     try {
       // 获取图片内容
+      console.log(`开始获取图片: ${cleanUrl}`);
       const imageResponse = await fetch(cleanUrl, {
         headers: {
           // 添加一些基本的请求头以模拟浏览器请求
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
           'Accept': 'image/webp,image/avif,image/png,image/jpeg,*/*',
           'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          'Referer': 'https://www.notion.so/',
+          'Origin': 'https://www.notion.so',
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
         },
@@ -59,7 +65,8 @@ export async function GET(request: NextRequest) {
       // 检查响应状态
       if (!imageResponse.ok) {
         console.error(`获取图片失败: ${imageResponse.status} ${imageResponse.statusText}`);
-        return new NextResponse('Failed to fetch image', { status: imageResponse.status });
+        console.error(`响应头: ${JSON.stringify([...imageResponse.headers.entries()])}`);
+        return new NextResponse(`Failed to fetch image: ${imageResponse.status} ${imageResponse.statusText}`, { status: imageResponse.status });
       }
       
       // 获取图片数据
@@ -83,6 +90,7 @@ export async function GET(request: NextRequest) {
       return response;
     } catch (fetchError) {
       clearTimeout(timeoutId);
+      console.error(`获取图片时发生错误: ${fetchError.message}`);
       throw fetchError;
     }
   } catch (error) {
@@ -91,6 +99,6 @@ export async function GET(request: NextRequest) {
     if (error.name === 'AbortError') {
       return new NextResponse('Request timeout', { status: 504 });
     }
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return new NextResponse(`Internal Server Error: ${error.message}`, { status: 500 });
   }
 } 

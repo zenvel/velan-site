@@ -33,7 +33,7 @@ export default function BlogPreview() {
   const t = useTranslations('Home');
   // 获取当前语言
   const params = useParams();
-  const locale = params.locale as string || 'en';
+  const locale = params?.locale as string || 'en';
   
   // 状态管理
   const [posts, setPosts] = useState<JoinedPost[]>([]);
@@ -98,7 +98,7 @@ export default function BlogPreview() {
             // 如果没有真实文章数据，使用示例帖子
             if (!title) {
               return (
-                <Link key={post.id || `sample-${index}`} href="#">
+                <div key={post.id || `sample-${index}`} className="relative">
                   <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
                     <div className="aspect-video overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)" }}>
                       <div className="flex h-full w-full items-center justify-center text-white">
@@ -117,7 +117,8 @@ export default function BlogPreview() {
                       </time>
                     </div>
                   </article>
-                </Link>
+                  <Link href="#" className="absolute inset-0 z-10" aria-label={t('latest.samplePost.title')}></Link>
+                </div>
               );
             }
             
@@ -134,7 +135,7 @@ export default function BlogPreview() {
             const icon = icons[index % icons.length];
             
             return (
-              <Link key={post.id} href={`/${locale}/blog/${postSlug}`}>
+              <div key={post.id} className="relative">
                 <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/60">
                   <div className="aspect-video overflow-hidden" style={{ background: gradient }}>
                     {coverUrl ? (
@@ -176,12 +177,13 @@ export default function BlogPreview() {
                     </time>
                   </div>
                 </article>
-              </Link>
+                <Link href={`/${locale}/blog/${postSlug}`} className="absolute inset-0 z-10" aria-label={title}></Link>
+              </div>
             );
           })
         ) : (
           // 没有文章时显示示例文章
-          <div className="col-span-3 md:col-span-1">
+          <div className="col-span-3 md:col-span-1 relative">
             <article className="group relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
               <div className="aspect-video overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #60a5fa 100%)" }}>
                 <div className="flex h-full w-full items-center justify-center text-white">
@@ -195,6 +197,7 @@ export default function BlogPreview() {
                 <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-400">{t('latest.samplePost.summary')}</p>
               </div>
             </article>
+            <Link href="#" className="absolute inset-0 z-10" aria-label={t('latest.samplePost.title')}></Link>
           </div>
         )}
       </div>

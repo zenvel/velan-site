@@ -22,6 +22,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '**.amazonaws.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
       {
@@ -30,7 +34,19 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.notion.so',
+        hostname: '**.notion.so',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.notion.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.notion.site',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.us-west-2.amazonaws.com',
       },
     ],
     unoptimized: true, // 禁用图片优化以避免超时问题

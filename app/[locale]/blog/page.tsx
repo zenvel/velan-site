@@ -134,7 +134,7 @@ export default async function BlogList({
       
       return (
         <Link href={href} className="block group">
-          <div className="overflow-hidden rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl dark:bg-gray-800">
+          <div className="overflow-hidden rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl dark:bg-gray-800 relative">
             {/* 封面图 */}
             {post.coverUrl ? (
               <div className="relative aspect-video w-full overflow-hidden">
@@ -191,6 +191,9 @@ export default async function BlogList({
                 )}
               </div>
             </div>
+            
+            {/* 添加一个绝对定位的链接覆盖整个卡片，确保整个区域可点击 */}
+            <span className="absolute inset-0 z-10" aria-hidden="true"></span>
           </div>
         </Link>
       );
