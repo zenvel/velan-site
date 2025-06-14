@@ -12,6 +12,8 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import LocalizedHead from '@/components/LocalizedHead';
 import NewsletterInline from '@/components/NewsletterInline';
+import { useEffect, useState } from 'react';
+import { Feature } from '@/lib/features';
 
 /**
  * Velan Home – high-standard landing page
@@ -26,6 +28,30 @@ export default function Home() {
   const newsletterT = useTranslations('newsletter');
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  
+  // 添加Features状态
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // 获取Features数据
+  useEffect(() => {
+    async function fetchFeatures() {
+      try {
+        const response = await fetch(`/api/features?lang=${locale}`);
+        if (!response.ok) {
+          throw new Error(`获取Features失败: ${response.status}`);
+        }
+        const data = await response.json();
+        setFeatures(data);
+      } catch (error) {
+        console.error('获取Features错误:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchFeatures();
+  }, [locale]);
   
   // 添加调试信息
   console.log("Home页面渲染，当前语言:", locale);
@@ -112,36 +138,36 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Features Grid */}
+        {/* Features Grid - 你将在这里看到什么 */}
         <section className="mx-auto max-w-6xl px-6 pb-16">
           <h2 className="mb-8 text-center text-3xl font-bold">{t('features.title')}</h2>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: t('features.cards.essays.title'),
-                desc: t('features.cards.essays.desc'),
-                icon: "📝",
-              },
-              {
-                title: t('features.cards.templates.title'),
-                desc: t('features.cards.templates.desc'),
-                icon: "📂",
-              },
-              {
-                title: t('features.cards.logs.title'),
-                desc: t('features.cards.logs.desc'),
-                icon: "📈",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-gray-800/60"
-              >
-                <div className="mb-4 text-3xl">{f.icon}</div>
-                <h3 className="mb-2 text-xl font-semibold">{f.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{f.desc}</p>
-              </div>
-            ))}
+            {loading ? (
+              // 加载状态
+              Array(3).fill(0).map((_, i) => (
+                <div 
+                  key={`skeleton-${i}`} 
+                  className="rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60"
+                >
+                  <div className="mb-4 h-8 w-8 rounded-full bg-gray-200 animate-pulse dark:bg-gray-700"></div>
+                  <div className="mb-2 h-6 w-3/4 bg-gray-200 animate-pulse dark:bg-gray-700"></div>
+                  <div className="h-16 w-full bg-gray-200 animate-pulse dark:bg-gray-700"></div>
+                </div>
+              ))
+            ) : (
+              // 显示Features数据
+              features.map((feature) => (
+                <Link 
+                  key={feature.id}
+                  href={`/${locale}${feature.slug}`}
+                  className="rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-gray-800/60"
+                >
+                  <div className="mb-4 text-3xl">{feature.icon || "🔍"}</div>
+                  <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">{feature.summary}</p>
+                </Link>
+              ))
+            )}
           </div>
         </section>
 
